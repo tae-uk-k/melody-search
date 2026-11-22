@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>정렬 배열 검색</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+</head>
+<body>
+<header class="head">
+  <nav class="tabs" aria-label="자료구조"><a href="index.html">순차 배열</a><a href="sorted.html" aria-current="page">정렬 배열</a><a href="hash.html">체이닝 해시</a></nav>
+  <nav class="steps" id="steps" aria-label="단계"></nav>
+</header>
+<div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
+<main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section></main>
+<footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
+<script src="common.js"></script>
+<script>
+{
+const M = buildModel(), { songs, query: Q, L } = M, A = songs[0];
+const W = 760, X = PX + LBL, LX = PX + 16, QX = 400, r = Q.notes.length;
+const rowY = i => PY + i * RH;
+const all = songs.flatMap(m => m.notes.map((_, s) => ({ m, s, id: 'pc-' + m.tag + s })));
+const order = [...all].sort((a, b) => less(a.m, a.s, b.m, b.s) ? -1 : less(b.m, b.s, a.m, a.s) ? 1 : 0);
+const n = order.length, com = (p, i) => common(p.m, p.s, Q, i), qid = i => 'pc-Q' + i;
+
+// C++ find 1단계와 같은 이진 탐색. pos = 입력 조각보다 앞에 오는 원곡 조각 수
+function search(i) {
+  let lo = 0, hi = n; const log = [];
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1, p = order[mid], lt = less(p.m, p.s, Q, i);
+    log.push({ lo, hi, mid, k: com(p, i), lt });
+    if (lt) lo = mid + 1; else hi = mid;
+  }
+  return { pos: lo, log };
+}
+const pos = Q.notes.map((_, i) => search(i).pos);
+const bestOf = i => Math.max(pos[i] > 0 ? com(order[pos[i] - 1], i) : 0, pos[i] < n ? com(order[pos[i]], i) : 0);
+const QI = M.best[0].i, S = search(QI), P = S.pos;
+
+// 배열 그림. ins: 입력 조각을 끼워 넣을 자리, row: 칸마다 강조 방법
+const list = (o = {}) => order.map((p, idx) => {
+  const st = o.row ? o.row(p, idx) : {};
+  return { id: p.id, x: LX, y: rowY(o.ins != null && idx >= o.ins ? idx + 1 : idx), html: pieceHTML(p.m, p.s, st), o: st.o ?? 1 };
+});
+const pill = (id, x, y, t, cls = '') => ({ id, x, y: y - 2, html: `<span class="pill ${cls}">${esc(t)}</span>` });
+const qRow = (extra = []) => [
+  { id: 'lab-Q', x: PX, y: PY, html: labHTML(Q) },
+  { id: 'tl-Q', x: X, y: PY, html: tilesHTML(Q, 0, r) },
+  ...extra
+];
+const stair = (i, o = {}) => ({ id: qid(i), x: X + i * CW - 48, y: PY + 52 + i * RH, from: { x: X + i * CW - 48, y: PY }, html: pieceHTML(Q, i, o) });
+
+// 1. 조각: 곡 A만 잘라 보이고, 다음 화면에서 21개를 한 배열로
+const cut = () => ({ W, H: PY + 52 + 7 * RH + 10, items: [
+  { id: 'lab-A', x: PX, y: PY, html: labHTML(A) },
+  { id: 'tl-A', x: X, y: PY, html: tilesHTML(A, 0, 7) },
+  ...A.notes.map((_, s) => ({ id: 'pc-A' + s, x: X + s * CW - 48, y: PY + 52 + s * RH, from: { x: X + s * CW - 48, y: PY }, html: pieceHTML(A, s) }))
+] });
+const gather = () => ({ W, H: rowY(n) + 10, items: all.map((p, idx) => ({ id: p.id, x: LX, y: rowY(idx), html: pieceHTML(p.m, p.s) })) });
+
+// 2. 정렬. 둘째 화면은 앞부분이 2칸 이상 같은 이웃을 칠한다
+const near = idx => Math.max(idx > 0 ? common(order[idx - 1].m, order[idx - 1].s, order[idx].m, order[idx].s) : 0,
+  idx < n - 1 ? common(order[idx + 1].m, order[idx + 1].s, order[idx].m, order[idx].s) : 0);
+
+// 3. 입력 조각
+const qIntro = () => ({ W, H: PY + 100, items: [
+  { id: 'lab-Q', x: PX, y: PY, html: labHTML(Q) },
+  { id: 'ct-Q', x: X, y: PY - 6, html: contourHTML(Q) },
+  { id: 'tl-Q', x: X, y: PY + 46, html: tilesHTML(Q, 0, r) }
+] });
+const qCut = () => ({ W, H: PY + 52 + r * RH + 10, items: qRow(Q.notes.map((_, i) => stair(i))) });
+
+// 4. 자리 찾기: 비교 한 번 = 화면 한 장
+const say = (t, k) => {
+  const p = order[t.mid];
+  if (t.k === plen(p.m, p.s) && t.k === plen(Q, QI)) return `${k}번째 비교, 끝까지 같아서 위쪽을 더 봐요`;
+  return t.lt ? `${k}번째 비교, 입력 조각이 더 뒤라서 아래쪽만 남겨요` : `${k}번째 비교, 입력 조각이 더 앞이라 위쪽만 남겨요`;
+};
+const range = (lo, hi) => ({ id: 'brk', x: LX - 22, y: rowY(lo), w: 4, h: (hi - lo) * RH - 6, html: '<div class="brk" style="height:100%"></div>' });
+const ready = () => ({ W, H: rowY(n) + 10, focus: rowY(0), items: [
+  ...list(), range(0, n),
+  { id: qid(QI), x: QX, y: rowY(0), html: pieceHTML(Q, QI) }
+] });
+const compare = t => () => {
+  const p = order[t.mid], miss = t.k < Math.min(plen(p.m, p.s), plen(Q, QI)) ? t.k : -1;
+  const qw = 48 + plen(Q, QI) * CW - 4;
+  return { W, H: rowY(n) + 10, focus: rowY(t.mid), items: [
+    ...list({ row: (_, idx) => idx === t.mid ? { on: t.k, miss } : { o: idx >= t.lo && idx < t.hi ? 1 : .25 } }),
+    { id: 'band', x: LX - 10, y: rowY(t.mid) - 3, w: QX + qw + 10 - (LX - 10), h: RH, z: 1, html: '<div class="band" style="height:100%"></div>' },
+    range(t.lo, t.hi),
+    { id: qid(QI), x: QX, y: rowY(t.mid), html: pieceHTML(Q, QI, { on: t.k, miss }) }
+  ] };
+};
+const found = () => ({ W, H: rowY(n + 1) + 10, focus: rowY(P), items: [
+  ...list({ ins: P }),
+  { id: qid(QI), x: LX, y: rowY(P), html: pieceHTML(Q, QI) }
+] });
+
+// 5. 이웃 비교
+const ku = com(order[P - 1], QI), kd = com(order[P], QI);
+const neighbors = () => ({ W, H: rowY(n + 1) + 10, focus: rowY(P), items: [
+  ...list({ ins: P, row: (_, idx) => idx === P - 1 ? { tint: ku } : idx === P ? { tint: kd } : { o: .25 } }),
+  { id: qid(QI), x: LX, y: rowY(P), html: pieceHTML(Q, QI, { tint: Math.max(ku, kd) }) },
+  pill('pu', QX, rowY(P - 1), `${ku}칸`, ku >= kd ? 'blue' : 'soft'),
+  pill('pd', QX, rowY(P + 1), `${kd}칸`, kd >= ku ? 'blue' : 'soft')
+] });
+const every = () => ({ W, H: PY + 52 + r * RH + 10, items: qRow(Q.notes.flatMap((_, i) => {
+  const b = bestOf(i), top = i === QI;
+  return [stair(i, top ? { on: b } : { tint: b }), pill('pb' + i, X + r * CW + 16, PY + 52 + i * RH, `${b}칸`, top ? 'blue' : 'soft')];
+})) });
+
+// 6. 곡 모으기: 공통 길이가 L 이상인 동안 위아래로 넓힌다
+const hit = new Set();
+let upStop = -1, dnStop = -1;
+for (let k = P - 1; k >= 0; k--) { if (com(order[k], QI) >= L) hit.add(k); else { upStop = k; break; } }
+for (let k = P; k < n; k++) { if (com(order[k], QI) >= L) hit.add(k); else { dnStop = k; break; } }
+const collect = () => ({ W, H: rowY(n + 1) + 10, focus: rowY(P), items: [
+  ...list({ ins: P, row: (p, idx) => {
+    if (hit.has(idx)) return { on: L };
+    if (idx === upStop || idx === dnStop) { const k = com(p, QI); return { tint: k, miss: k < plen(p.m, p.s) ? k : -1 }; }
+    return { o: .25 };
+  } }),
+  { id: qid(QI), x: LX, y: rowY(P), html: pieceHTML(Q, QI, { on: L }) },
+  ...[...hit].map(idx => pill('nm' + idx, QX, rowY(idx >= P ? idx + 1 : idx), order[idx].m.name, 'blue'))
+] });
+
+startPage({
+  W,
+  next: { href: 'hash.html', label: '다음 방식: 체이닝 해시' },
+  steps: [
+    changeStep(M),
+    { phase: '구축', label: '조각', title: '시작 칸마다 끝까지 잘라 조각을 만들어요', frames: [
+      { draw: cut },
+      { title: `조각 ${n}개를 배열 하나에 모아요`, draw: gather }
+    ] },
+    { phase: '구축', label: '정렬', title: '앞 칸부터 비교해서 사전 순으로 줄 세워요', frames: [
+      { draw: () => ({ W, H: rowY(n) + 10, items: list() }) },
+      { title: '앞부분이 비슷한 조각끼리 모여요', draw: () => ({ W, H: rowY(n) + 10, items: list({ row: (_, idx) => near(idx) >= 2 ? { tint: near(idx) } : {} }) }) }
+    ] },
+    { phase: '검색', label: '입력 조각', title: '입력도 변화 기호로 바꿔요', frames: [
+      { draw: qIntro },
+      { title: `입력도 시작 칸마다 잘라 조각 ${r}개를 만들어요`, draw: qCut }
+    ] },
+    { phase: '검색', label: '자리 찾기', title: `입력 조각 Q${QI}이 들어갈 자리를 반씩 좁혀 찾아요`, frames: [
+      { draw: ready },
+      ...S.log.map((t, k) => ({ title: say(t, k + 1), draw: compare(t) })),
+      { title: `비교 ${S.log.length}번 만에 들어갈 자리를 찾았어요`, draw: found }
+    ] },
+    { phase: '검색', label: '이웃 비교', title: '바로 위아래 조각과 앞에서부터 몇 칸 같은지 세요', frames: [
+      { draw: neighbors },
+      { title: `입력 조각 ${r}개 모두 이렇게 세면 ${L}칸이 가장 길어요`, draw: every }
+    ] },
+    { phase: '검색', label: '곡 모으기', title: `${L}칸 같은 조각이 이어지는 동안 위아래로 넓혀 곡을 모아요`, frames: [{ draw: collect }] },
+    resultStep(M),
+    costStep('sorted', '곡이 10배 늘어도 검색 시간은 조금만 늘어요', 'us')
+  ]
+});
+}
+</script>
+</body>
+</html>

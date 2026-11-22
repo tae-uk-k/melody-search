@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>체이닝 해시 검색</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+</head>
+<body>
+<header class="head">
+  <nav class="tabs" aria-label="자료구조"><a href="index.html">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html" aria-current="page">체이닝 해시</a></nav>
+  <nav class="steps" id="steps" aria-label="단계"></nav>
+</header>
+<div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
+<main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section></main>
+<footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
+<script src="common.js"></script>
+<script>
+{
+const M = buildModel(), { songs, query: Q, L } = M, A = songs[0];
+const W = 680, X = PX + LBL, BX = PX + 60, GAP = 46, LEN = 4, r = Q.notes.length;
+const fmt = h => h.toLocaleString('en-US');
+
+// 길이 4 해시표. 칸 수 = 길이 4 조각 수 (C++ build와 같다)
+const pcs = songs.flatMap(m => m.notes.map((_, s) => ({ m, s, id: 'ch-' + m.tag + s })).filter(p => plen(p.m, p.s) >= LEN));
+const NB = pcs.length;
+pcs.forEach(p => { p.h = hashOf(p.m, p.s, LEN); p.b = Number(p.h % BigInt(NB)); });
+const cnt = Array(NB).fill(0); pcs.forEach(p => cnt[p.b]++);
+const off = [0]; cnt.forEach((c, b) => off.push(off[b] + c));
+const fill = off.slice(0, NB); pcs.forEach(p => { p.e = fill[p.b]++; p.d = p.e - off[p.b]; });
+const qHash = i => { const h = hashOf(Q, i, LEN); return { h, b: Number(h % BigInt(NB)) }; };
+
+// 그림 조각
+const bx = b => BX + b * GAP;
+const boxes = (id, y, o = {}) => ({ id, x: BX, y, html: `<div class="bk ${o.en ? 'en' : ''}">${Array.from({ length: NB }, (_, b) =>
+  `<span class="${o.on && o.on(b) ? 'on' : ''}"><em>${b}</em>${o.num ? o.num(b) : ''}</span>`).join('')}</div>` });
+const chipItem = (p, x, y, o = {}) => ({ id: p.id, x, y, html: chip(p.m.tag + p.s, 'w ' + (o.on ? 'on' : '')), o: o.o ?? 1, z: 3, from: o.from });
+const lines = (y1, y2, on) => {
+  const h = y2 - y1, mid = h / 2, path = [];
+  for (let b = 0; b < NB; b++) if (cnt[b]) {
+    const a = b * GAP + 20, c = off[b] * GAP + 20;
+    path.push(`<path class="${on === b ? 'on' : ''}" d="M${a} 0C${a} ${mid} ${c} ${mid} ${c} ${h}"/>`);
+  }
+  return { id: 'lines', x: BX, y: y1, z: 1, html: `<svg class="ln" width="${NB * GAP}" height="${h}">${path.join('')}</svg>` };
+};
+const note = (id, x, y, t) => ({ id, x, y, html: `<span class="note">${esc(t)}</span>` });
+const big = (id, x, y, t) => ({ id, x, y, html: `<span class="big">${esc(t)}</span>` });
+
+// 조각 → 숫자 → 칸 (구축은 A0, 검색은 입력 조각)
+function toBucket(m, s, rowHTML, rowLab, showRem) {
+  const h = hashOf(m, s, LEN), b = Number(h % BigInt(NB));
+  const px = X + s * CW - 48, end = px + 48 + LEN * CW - 4;
+  const it = [
+    { id: rowLab.id, x: PX, y: PY, html: rowLab.html },
+    { id: rowHTML.id, x: X, y: PY, html: rowHTML.html },
+    { id: 'piece', x: px, y: PY + 56, html: pieceHTML(m, s, { len: LEN }) },
+    { id: 'arw', x: end + 16, y: PY + 52, html: '<span class="arrow">→</span>' },
+    big('hash', end + 58, PY + 52, fmt(h))
+  ];
+  if (showRem) it.push({ id: 'rem', x: end + 58, y: PY + 112, html: `<div style="display:flex;align-items:center;gap:12px"><span class="note">${NB}로 나눈 나머지</span><span class="big">${b}</span></div>` });
+  return { it, b, px };
+}
+
+// 1. 해시값
+const hashA = rem => () => {
+  const { it, b, px } = toBucket(A, 0, { id: 'tl-A', html: tilesHTML(A, 0, 7, { range: [0, LEN] }) }, { id: 'lab-A', html: labHTML(A) }, rem);
+  if (rem) {
+    it.push(boxes('bk', PY + 200, { on: k => k === b }));
+    it.push(chipItem(pcs[0], bx(b) + 2, PY + 248, { from: { x: px, y: PY + 58 } }));
+  }
+  return { W, H: rem ? PY + 296 : PY + 110, items: it };
+};
+
+// 2. 표에 넣기: 칸 아래로 줄줄이 이어 붙인다
+const BY = PY + 40;
+const chained = hl => () => {
+  const it = [boxes('bk', BY, { on: b => hl && cnt[b] > 1 })];
+  pcs.forEach(p => it.push(chipItem(p, bx(p.b) + 2, BY + 48 + p.d * 32)));
+  for (let b = 0; b < NB; b++) if (cnt[b]) it.push({ id: 'link' + b, x: bx(b) + 19, y: BY + 40, w: 2, h: 8 + (cnt[b] - 1) * 32 + 14, z: 1, html: '<div class="link"></div>' });
+  return { W, H: BY + 48 + Math.max(...cnt) * 32 + 12, items: it };
+};
+
+// 3. 한 줄 저장 (offset + entries)
+const flat = (bkY, enY, o = {}) => [
+  note('lb-bk', PX, bkY + 8, '칸'),
+  note('lb-en', PX, enY + 8, '항목'),
+  boxes('bk', bkY, { num: b => cnt[b] ? off[b] : '', on: b => b === o.hl }),
+  boxes('en', enY, { en: true, on: e => o.seg != null && e >= off[o.seg] && e < off[o.seg + 1] }),
+  lines(bkY + 40, enY - 28, o.hl),
+  ...pcs.map(p => chipItem(p, bx(p.e) + 2, enY + 6, { on: o.ok && o.ok(p), o: o.drop && o.drop(p) ? .3 : 1 }))
+];
+const store = b => () => ({ W, H: BY + 130 + 56, items: flat(BY, BY + 130, { hl: b, seg: b }) });
+
+// 4. 길이별 표
+const lenRows = () => {
+  const counts = Array.from({ length: 7 }, (_, k) => songs.reduce((t, m) => t + Math.max(0, m.notes.length - k), 0));
+  const total = counts.reduce((a, b) => a + b, 0);
+  return { W, H: PY + 7 * 40 + 70, items: [
+    ...counts.map((c, k) => ({ id: 'lr' + k, x: PX, y: PY + k * 40, html: `<div class="lenrow"><span class="k">길이 ${k + 1}</span><span class="sq ${k + 1 === LEN ? 'on' : ''}">${'<b></b>'.repeat(c)}</span><span class="n">${c}개</span></div>` })),
+    { id: 'tot', x: PX, y: PY + 7 * 40 + 16, html: `<span class="pill">조각 ${counts[0]}개를 항목 ${total}개로 저장해요</span>` }
+  ] };
+};
+
+// 5. 칸 찾기 (검색)
+const SY = PY + 200, EY = SY + 130;
+const find = (i, step) => () => {
+  const { it, b } = toBucket(Q, i, { id: 'tl-Q', html: tilesHTML(Q, 0, r, { range: [i, i + LEN] }) }, { id: 'lab-Q', html: labHTML(Q) }, true);
+  const h = qHash(i).h;
+  it.push(...flat(SY, EY, step ? { hl: b, seg: b, ok: p => p.b === b && p.h === h, drop: p => p.b === b && p.h !== h } : { hl: b }));
+  return { W, H: EY + 56, items: it, focus: SY };
+};
+
+// 6. 길이 좁히기 (C++ find 2단계: low = 1, high = 입력 길이)
+const has = len => Q.notes.some((_, i) => i + len <= r && songs.some(m => m.notes.some((_, j) => rawMatch(Q, i, m, j) >= len)));
+const narrow = [];
+{
+  let lo = 1, hi = r; const done = {};
+  narrow.push({ lo, hi, done: { ...done } });
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1, ok = has(mid);
+    for (const k in done) if (done[k] === 'ok') done[k] = 'old';
+    done[mid] = ok ? 'ok' : 'no';
+    if (ok) lo = mid + 1; else hi = mid - 1;
+    narrow.push({ lo, hi, done: { ...done }, mid, ok });
+  }
+}
+const NLW = r * 48 + (r - 1) * 6;
+const line = t => () => ({ W, H: PY + 48 + 30, items: [{ id: 'nl', x: (W - NLW) / 2, y: PY + 10, html: `<div class="nl">${Array.from({ length: r }, (_, k) => {
+  const v = k + 1, d = t.done[v];
+  const cls = d || (v < t.lo || v > t.hi ? 'out' : 'in');
+  return `<span class="${cls}">${v}</span>`;
+}).join('')}</div>` }] });
+const lineTitle = (t, last) => {
+  if (!t.mid) return '';
+  if (!t.ok) return last ? `${t.mid}칸 표에는 없어요. 가장 긴 길이는 ${L}칸이에요` : `${t.mid}칸 표에는 없어요. 더 짧은 쪽을 봐요`;
+  return last ? `${t.mid}칸 표에도 있어요. 가장 긴 길이는 ${L}칸이에요` : `${t.mid}칸 표에 있어요. 더 긴 쪽을 봐요`;
+};
+
+const QI = M.best[0].i;
+const other = pcs.find(p => cnt[p.b] > 2 && pcs.some(o => o.b === p.b && o.h !== p.h));
+const QO = other ? Q.notes.findIndex((_, i) => i + LEN <= r && qHash(i).b === other.b) : -1;
+
+startPage({
+  W,
+  next: { href: 'index.html', label: '처음 방식부터 다시 보기' },
+  steps: [
+    changeStep(M),
+    { phase: '구축', label: '해시값', title: `길이 ${LEN} 조각 하나를 숫자 하나로 바꿔요`, frames: [
+      { draw: hashA(false) },
+      { title: `조각 수 ${NB}로 나눈 나머지가 칸 번호예요`, draw: hashA(true) }
+    ] },
+    { phase: '구축', label: '표에 넣기', title: `길이 ${LEN} 조각 ${NB}개를 모두 칸에 넣어요`, frames: [
+      { draw: chained(false) },
+      { title: '한 칸에 여러 개가 모이면 줄줄이 이어 둬요', draw: chained(true) }
+    ] },
+    { phase: '구축', label: '한 줄 저장', title: '칸 순서대로 배열 한 줄에 이어 저장해요', frames: [
+      { draw: store(undefined) },
+      { title: '칸에는 자기 항목이 몇 번부터인지만 적어요', draw: store(pcs[0].b) }
+    ] },
+    { phase: '구축', label: '길이별 표', title: '길이 1부터 7까지 길이마다 표를 만들어요', frames: [{ draw: lenRows }] },
+    { phase: '검색', label: '칸 찾기', title: '입력 조각도 같은 방법으로 칸 번호를 구해요', frames: [
+      { draw: find(QI, false) },
+      { title: '그 칸의 항목만 꺼내 음을 비교해 확인해요', draw: find(QI, true) },
+      ...(QO >= 0 ? [{ title: '다른 조각이 섞인 칸에서는 해시값이 같은 항목만 골라요', draw: find(QO, true) }] : [])
+    ] },
+    { phase: '검색', label: '길이 좁히기', title: `길이 1부터 ${r}까지 반씩 좁혀 가장 긴 길이를 찾아요`, frames:
+      narrow.map((t, k) => ({ title: lineTitle(t, k === narrow.length - 1) || undefined, draw: line(t) })) },
+    resultStep(M),
+    costStep('hash', '곡이 늘어도 검색 시간이 거의 그대로예요', 'us')
+  ]
+});
+}
+</script>
+</body>
+</html>
