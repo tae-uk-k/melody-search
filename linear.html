@@ -18,10 +18,74 @@
 </aside>
 <div class="content">
 <div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
-<main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section><p class="desc" id="desc" aria-live="polite" hidden></p></main>
+<main class="main"><section class="card" id="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section><pre class="code" id="code" hidden></pre><p class="desc" id="desc" aria-live="polite" hidden></p></main>
 <footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
 </div>
 </div>
+<script type="text/plain" id="src">
+// raw_match_length()는 main.cpp의 공통 함수
+// 입력 i번, 곡 j번부터 몇 칸 연속으로 같은 멜로디인지 센다
+int raw_match_length(const Melody& q, int i, const Melody& m, int j, int limit) {
+    // 첫 칸 쌍의 길이 비율 (약분한 정수 두 개)
+    long long g = gcd_ll(q.notes[i].length, m.notes[j].length);
+    long long ratio_q = q.notes[i].length / g;
+    long long ratio_m = m.notes[j].length / g;
+
+    bool has_shift = false;  // 높이 차이를 아직 정하지 않음
+    int shift = 0;
+
+    int k = 0;
+    while (k < limit && i + k < (int)q.notes.size() && j + k < (int)m.notes.size()) {
+        const Note& a = q.notes[i + k];
+        const Note& b = m.notes[j + k];
+
+        if ((a.pitch == -1) != (b.pitch == -1)) break;  // 음·쉼 종류가 다름
+
+        long long gg = gcd_ll(a.length, b.length);
+        if (a.length / gg != ratio_q || b.length / gg != ratio_m) break;  // 길이 비율이 다름
+
+        if (a.pitch != -1) {
+            if (!has_shift) {
+                shift = b.pitch - a.pitch;  // 첫 음 쌍에서 높이 차이 결정
+                has_shift = true;
+            } else if (b.pitch - a.pitch != shift) {  // 높이 차이가 다름
+                break;
+            }
+        }
+        k++;
+    }
+    return k;
+}
+
+class LinearArray {
+public:
+    void build(const vector<Melody>&) {}  // 미리 할 일 없음
+
+    Result find(const vector<Melody>& blocks, const Melody& query) {
+        int r = (int)query.notes.size();
+        int best = 0;
+        set<string> names;
+
+        for (const Melody& block : blocks) {
+            int block_best = 0;
+            // 입력 시작 위치 × 곡 시작 위치, 모든 쌍 비교
+            for (int i = 0; i < r; i++) {
+                for (int j = 0; j < (int)block.notes.size(); j++) {
+                    int length = raw_match_length(query, i, block, j, r);
+                    if (length > block_best) block_best = length;
+                }
+            }
+
+            if (block_best > best) {  // 더 긴 일치 → 곡 목록 새로 시작
+                best = block_best;
+                names.clear();
+            }
+            if (block_best == best && best > 0) names.insert(block.name);  // 같은 길이 → 곡 추가
+        }
+        return make_result(best, names);
+    }
+};
+</script>
 <script src="common.js"></script>
 <script>
 {
@@ -92,7 +156,8 @@ startPage({
       { title: '네모 하나가 비교 한 번의 결과, 진할수록 길게 일치', desc: '숫자 7이 가장 긴 일치. 곡이 늘어나면 이 표의 세로줄도 그만큼 늘어나 비교 횟수가 데이터에 비례.', draw: () => matrix(true) }
     ] },
     resultStep(M),
-    costStep('linear', '곡 수가 10배 늘면 검색 시간도 10배 증가', 'ms', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 모든 위치를 비교하므로 데이터에 비례해 증가.')
+    costStep('linear', '곡 수가 10배 늘면 검색 시간도 10배 증가', 'ms', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 모든 위치를 비교하므로 데이터에 비례해 증가.'),
+    codeStep('01_linear_array.cpp')
   ]
 });
 }

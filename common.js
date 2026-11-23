@@ -165,6 +165,19 @@ function costStep(key, title, unit, desc) {
   return { phase: '결과', label: '데이터 증가', title, desc, frames: [{ draw: () => ({ W: 608, H: 200, items: [{ id: 'cost', x: PX, y: PY, html }] }) }] };
 }
 
+// 코드 단계 (각 방식 마지막)
+function codeStep(file) {
+  return { phase: '코드', label: 'C++ 구현', title: `구현 코드: ${file}`,
+    desc: '제출용 C++ 코드에서 주석만 짧게 줄인 것. 데이터 읽기와 공통 자료형은 main.cpp에 있음.', frames: [{ code: true }] };
+}
+function highlight(src) {
+  const KW = /\b(int|long|bool|void|const|static|struct|class|public|return|for|while|if|else|continue|break|size_t|true|false)\b/g;
+  return src.split('\n').map(line => {
+    const i = line.indexOf('//'), body = i < 0 ? line : line.slice(0, i), note = i < 0 ? '' : line.slice(i);
+    return esc(body).replace(KW, '<b>$1</b>') + (note ? `<i>${esc(note)}</i>` : '');
+  }).join('\n');
+}
+
 // ---------- 단계 엔진 ----------
 function startPage(cfg) {
   const $ = id => document.getElementById(id);
@@ -206,7 +219,7 @@ function startPage(cfg) {
     box.style.width = W * SC + 'px'; box.style.height = cur.H * SC + 'px';
   }
   function follow() {
-    if (cur.focus == null) return;
+    if (!cur || cur.focus == null) return;
     const top = document.querySelector('.bar').offsetHeight, bottom = document.querySelector('.cta').offsetHeight + ($('desc').offsetHeight || 0) + 12;
     const y = box.getBoundingClientRect().top + cur.focus * SC;
     if (y > top + 24 && y < innerHeight - bottom - 60) return;
@@ -214,8 +227,11 @@ function startPage(cfg) {
   }
   function render() {
     const fr = frames[f], st = cfg.steps[fr.si];
-    cur = fr.draw();
-    apply(cur.items); size();
+    $('card').hidden = !!fr.code; $('code').hidden = !fr.code;
+    if (fr.code) {
+      cur = null;
+      if (!$('code')._done) { $('code').innerHTML = highlight($('src').textContent.trim()); $('code')._done = true; }
+    } else { cur = fr.draw(); apply(cur.items); size(); }
     $('phase').textContent = st.phase;
     $('title').textContent = fr.title || st.title;
     const d = fr.desc || st.desc || '';
@@ -235,5 +251,5 @@ function startPage(cfg) {
   render();
 }
 
-Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, plen, letter, common, less, rawMatch, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, startPage });
+Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, plen, letter, common, less, rawMatch, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, codeStep, startPage });
 }

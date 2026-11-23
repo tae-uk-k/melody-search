@@ -18,10 +18,148 @@
 </aside>
 <div class="content">
 <div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
-<main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section><p class="desc" id="desc" aria-live="polite" hidden></p></main>
+<main class="main"><section class="card" id="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section><pre class="code" id="code" hidden></pre><p class="desc" id="desc" aria-live="polite" hidden></p></main>
 <footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
 </div>
 </div>
+<script type="text/plain" id="src">
+// letter(), raw_match_length()는 main.cpp의 공통 함수
+const long long MOD = 1000000007;  // 나머지를 구할 소수
+const long long BASE = 911382323;  // 자릿값
+
+// 표에 저장하는 항목
+struct Entry {
+    long long hash;
+    int block;
+    int start;
+};
+
+class HashTable {
+    // 길이 L 조각만 담은 해시표 하나
+    struct Table {
+        vector<int> offset;  // 칸마다 첫 항목 위치 (칸 수 + 1개)
+        vector<Entry> entries;  // 모든 항목을 칸 순서대로 이어 붙인 배열
+        size_t buckets() const { return offset.size() - 1; }
+    };
+
+    vector<Table> tables;  // tables[L] = 길이 L 해시표
+
+    // s번 조각의 길이 1~max_len 해시값을 한 번에 계산
+    static void piece_hashes(const Melody& m, int s, int max_len, long long hashes[]) {
+        long long h = 0;
+        for (int length = 1; length <= max_len; length++) {
+            h = (h * BASE + letter(m, s, length - 1)) % MOD;  // 기호 하나를 뒤에 붙임
+            hashes[length] = h;
+        }
+    }
+
+    // 길이 L로 입력과 일치하는 원곡 조각이 있는지 검사
+    bool check(const vector<Melody>& blocks, const Melody& query,
+               const vector<vector<long long>>& query_hashes, int L,
+               bool collect, set<string>& names) {
+        int r = (int)query.notes.size();
+        const Table& table = tables[L];
+
+        for (int i = 0; i + L <= r; i++) {
+            long long h = query_hashes[i][L];
+            size_t c = h % table.buckets();  // 들어 있을 칸
+
+            for (int e = table.offset[c]; e < table.offset[c + 1]; e++) {  // 그 칸의 항목만 확인
+                const Entry& entry = table.entries[e];
+                if (entry.hash != h) continue;  // 해시값이 다르면 다른 조각
+                if (raw_match_length(query, i, blocks[entry.block], entry.start, L) < L)  // 실제 음까지 비교해 충돌 제외
+                    continue;
+                if (!collect) return true;  // 이진 탐색 중에는 하나만 찾으면 끝
+                names.insert(blocks[entry.block].name);
+            }
+        }
+        return !names.empty();
+    }
+
+public:
+    void build(const vector<Melody>& blocks) {
+        tables.assign(MAX_INPUT + 1, Table());
+
+        // 1. 길이마다 칸 수 = 그 길이 조각 수
+        for (int L = 1; L <= MAX_INPUT; L++) {
+            long long count = 0;
+            for (const Melody& block : blocks) {
+                int n = (int)block.notes.size();
+                if (n >= L) count += n - L + 1;
+            }
+            tables[L].offset.assign((count > 0 ? count : 1) + 1, 0);
+            tables[L].entries.resize(count);
+        }
+
+        // 2. 1차: 칸마다 들어갈 조각 수 세기
+        long long hashes[MAX_INPUT + 1];
+
+        for (const Melody& block : blocks) {
+            int n = (int)block.notes.size();
+            for (int s = 0; s < n; s++) {
+                int max_len = min(MAX_INPUT, n - s);
+                piece_hashes(block, s, max_len, hashes);
+                for (int L = 1; L <= max_len; L++) {
+                    Table& table = tables[L];
+                    table.offset[hashes[L] % table.buckets() + 1]++;
+                }
+            }
+        }
+
+        // 3. 개수를 앞에서부터 더해 시작 위치로 변환
+        for (int L = 1; L <= MAX_INPUT; L++) {
+            vector<int>& offset = tables[L].offset;
+            for (size_t c = 1; c < offset.size(); c++) offset[c] += offset[c - 1];
+        }
+
+        // 4. 2차: 칸마다 다음 빈자리에 항목 채우기
+        vector<vector<int>> next(MAX_INPUT + 1);
+        for (int L = 1; L <= MAX_INPUT; L++)
+            next[L].assign(tables[L].offset.begin(), tables[L].offset.end() - 1);
+
+        for (int b = 0; b < (int)blocks.size(); b++) {
+            int n = (int)blocks[b].notes.size();
+            for (int s = 0; s < n; s++) {
+                int max_len = min(MAX_INPUT, n - s);
+                piece_hashes(blocks[b], s, max_len, hashes);
+                for (int L = 1; L <= max_len; L++) {
+                    Table& table = tables[L];
+                    Entry& entry = table.entries[next[L][hashes[L] % table.buckets()]++];
+                    entry.hash = hashes[L];
+                    entry.block = b;
+                    entry.start = s;
+                }
+            }
+        }
+    }
+
+    Result find(const vector<Melody>& blocks, const Melody& query) {
+        int r = (int)query.notes.size();
+
+        // 1. 입력 조각의 해시값 계산
+        vector<vector<long long>> query_hashes(r, vector<long long>(r + 1, 0));
+        for (int i = 0; i < r; i++) piece_hashes(query, i, r - i, query_hashes[i].data());
+
+        // 2. 가장 긴 일치 길이를 이진 탐색
+        set<string> unused;
+        int low = 1, high = r, best = 0;
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            if (check(blocks, query, query_hashes, mid, false, unused)) {
+                best = mid;  // 있으면 더 긴 길이
+                low = mid + 1;
+            } else {
+                high = mid - 1;  // 없으면 더 짧은 길이
+            }
+        }
+
+        // 3. 가장 긴 길이로 일치한 곡 이름 수집
+        set<string> names;
+        if (best > 0) check(blocks, query, query_hashes, best, true, names);
+        return make_result(best, names);
+    }
+};
+</script>
 <script src="common.js"></script>
 <script>
 {
@@ -183,7 +321,8 @@ startPage({
     { phase: '검색', label: '길이 좁히기', title: `길이 1~${r} 범위를 절반씩 줄여 가장 긴 일치 길이 탐색`, frames:
       narrow.map((t, k) => ({ title: lineTitle(t, k === narrow.length - 1) || undefined, desc: lineDesc(t), draw: line(t) })) },
     resultStep(M),
-    costStep('hash', '곡 수가 늘어도 검색 시간은 거의 일정', 'us', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 입력 조각이 들어갈 칸만 확인하므로 데이터 크기와 거의 무관.')
+    costStep('hash', '곡 수가 늘어도 검색 시간은 거의 일정', 'us', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 입력 조각이 들어갈 칸만 확인하므로 데이터 크기와 거의 무관.'),
+    codeStep('03_hash_table.cpp')
   ]
 });
 }
