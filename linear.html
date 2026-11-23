@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=4">
+<link rel="stylesheet" href="common.css?v=5">
 </head>
 <body>
 <div class="app">
@@ -18,7 +18,7 @@
 </aside>
 <div class="content">
 <div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
-<main class="main"><section class="card" id="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div><pre class="code" id="code" hidden></pre><div class="desc" id="desc" aria-live="polite" hidden></div></section></main>
+<main class="main"><section class="card" id="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div><div class="code" id="code" hidden></div><div class="desc" id="desc" aria-live="polite" hidden></div></section></main>
 <footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
 </div>
 </div>
@@ -86,7 +86,7 @@ public:
     }
 };
 </script>
-<script src="common.js?v=4"></script>
+<script src="common.js?v=5"></script>
 <script>
 {
 const M = buildModel(), { songs, query: Q } = M, A = songs[0], r = Q.notes.length;
