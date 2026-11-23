@@ -172,7 +172,7 @@ const numBold = t => t.replace(/(?<![A-Za-z\d])([+×]?\d[\d,]*(?:~\d+)?(?:번째
 const descHTML = d => {
   const items = (Array.isArray(d) ? d : d.split(/(?<=\.)\s+/)).map(x => x.replace(/\.$/, '')).filter(Boolean);
   const one = x => numBold(term(x));
-  return items.length > 1 ? `<ol>${items.map(x => `<li>${one(x)}</li>`).join('')}</ol>` : `<p>${one(items[0] || '')}</p>`;
+  return items.length > 1 ? `<ol>${items.map(x => `<li><span>${one(x)}</span></li>`).join('')}</ol>` : `<p>${one(items[0] || '')}</p>`;
 };
 
 // 코드 단계 (각 방식 마지막)

@@ -103,6 +103,7 @@ mark{padding:0;background:none;color:var(--blue-ink);font-weight:700}
 .desc ol{margin:0;padding:0;list-style:none;counter-reset:n;display:grid;gap:12px}
 .desc li{counter-increment:n;display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start}
 .desc li::before{content:counter(n);width:28px;height:28px;margin-top:-1px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700}
+.desc li>span{min-width:0}
 .desc b{font-weight:700;color:var(--ink)}
 .box{position:relative;margin:0 auto}
 #stage{position:absolute;left:0;top:0;transform-origin:0 0}
