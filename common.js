@@ -165,6 +165,29 @@ function costStep(key, title, unit, desc) {
   return { phase: '결과', label: '데이터 증가', title, desc, frames: [{ draw: () => ({ W: 608, H: 200, items: [{ id: 'cost', x: PX, y: PY, html }] }) }] };
 }
 
+// 시간복잡도 (결과 단계): 곱해지는 요인을 칸으로 보여 주고 = 결과
+function bigOStep(title, rows, desc) {
+  const FW = 112, GAP = 36, x0 = PX + 76, RHT = 120;
+  const draw = () => {
+    const it = []; let W = 0;
+    rows.forEach((row, ri) => {
+      const y = PY + ri * RHT;
+      it.push({ id: 'bl' + ri, x: PX, y: y + 24, html: `<span class="pill soft">${esc(row.label)}</span>` });
+      row.factors.forEach(([sym, lab], k) => {
+        const x = x0 + k * (FW + GAP);
+        it.push({ id: `fx${ri}-${k}`, x, y, html: `<div class="fx"><b>${esc(sym)}</b><span>${esc(lab)}</span></div>` });
+        if (k < row.factors.length - 1) it.push({ id: `op${ri}-${k}`, x: x + FW, y, html: `<span class="op" style="width:${GAP}px">${esc(row.ops[k])}</span>` });
+      });
+      const end = x0 + row.factors.length * (FW + GAP) - GAP;
+      it.push({ id: 'eq' + ri, x: end, y, html: `<span class="op" style="width:${GAP}px">=</span>` });
+      it.push({ id: 'res' + ri, x: end + GAP + 6, y, html: `<span class="res">${esc(row.result)}</span>` });
+      W = Math.max(W, end + GAP + 6 + 190 + PX);
+    });
+    return { W, H: PY + rows.length * RHT, items: it };
+  };
+  return { phase: '결과', label: '시간복잡도', title, desc, frames: [{ draw }] };
+}
+
 // [[용어]] 표시: 정확한 용어에 형광펜 밑줄
 const term = t => esc(t).replace(/\[\[(.+?)\]\]/g, '<mark>$1</mark>');
 // 설명 칸: 문장마다 번호, 숫자는 굵게
@@ -287,5 +310,5 @@ function startPage(cfg) {
   render();
 }
 
-Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, plen, letter, common, less, rawMatch, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, codeStep, startPage });
+Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, plen, letter, common, less, rawMatch, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, bigOStep, codeStep, startPage });
 }

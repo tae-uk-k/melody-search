@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=6">
+<link rel="stylesheet" href="common.css?v=7">
 </head>
 <body>
 <div class="app">
@@ -160,7 +160,7 @@ public:
     }
 };
 </script>
-<script src="common.js?v=6"></script>
+<script src="common.js?v=7"></script>
 <script>
 {
 const M = buildModel(), { songs, query: Q, L } = M, A = songs[0];
@@ -321,7 +321,10 @@ startPage({
     { phase: '검색', label: '길이 좁히기', title: `길이 1~${r} 범위를 절반씩 줄여 가장 긴 일치 길이 탐색`, frames:
       narrow.map((t, k) => ({ title: lineTitle(t, k === narrow.length - 1) || undefined, desc: lineDesc(t), draw: line(t) })) },
     resultStep(M),
-    costStep('hash', '[[O(1) 평균 상수 시간]]: 곡 수가 늘어도 검색 시간은 거의 일정', 'us', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 입력 조각이 들어갈 칸만 확인하므로 데이터 크기와 거의 무관.'),
+    bigOStep('[[O(1) 평균 상수 시간]]: 검색 식에 원곡 크기 N이 없음', [
+      { label: '구축', factors: [['N', '시작 위치'], ['32', '길이 1~32 해시'], ['2', '두 번 훑기']], ops: ['×', '×'], result: 'O(N)' },
+      { label: '검색', factors: [['r²', '입력 조각 해시 계산'], ['log r', '길이 이진 탐색'], ['r', '입력 조각'], ['1', '칸 평균 항목']], ops: ['+', '×', '×'], result: 'O(r²)' }
+    ], ['N = 원곡 전체 음 개수(조각 수), r = 입력 음 개수(최대 32)', '구축: 시작 위치마다 길이 1~32 해시를 한 번에 계산하고 두 번 훑어 저장, 항목이 32 × N개라 메모리도 그만큼 사용', '칸 수 = 조각 수라 한 칸에 평균 항목 1개 (적재율 1)', '검색: 길이를 이진 탐색하며 입력 조각마다 칸 하나만 확인, 식에 N이 없어 원곡이 늘어도 시간 거의 일정', '한 칸에 항목이 몰리는 최악의 경우 O(N)까지 가능해서 [[평균]] 상수 시간']),
     codeStep('03_hash_table.cpp')
   ]
 });

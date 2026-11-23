@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=6">
+<link rel="stylesheet" href="common.css?v=7">
 </head>
 <body>
 <div class="app">
@@ -86,7 +86,7 @@ public:
     }
 };
 </script>
-<script src="common.js?v=6"></script>
+<script src="common.js?v=7"></script>
 <script>
 {
 const M = buildModel(), { songs, query: Q } = M, A = songs[0], r = Q.notes.length;
@@ -156,7 +156,10 @@ startPage({
       { title: '네모 하나가 비교 한 번의 결과, 진할수록 길게 일치', desc: '숫자 7이 가장 긴 일치. 곡이 늘어나면 이 표의 세로줄도 그만큼 늘어나 비교 횟수가 데이터에 비례.', draw: () => matrix(true) }
     ] },
     resultStep(M),
-    costStep('linear', '[[O(N) 선형 시간]]: 곡 수가 10배면 검색 시간도 10배', 'ms', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 모든 위치를 비교하므로 데이터에 비례해 증가.'),
+    bigOStep('[[O(N) 선형 시간]]: 입력마다 원곡의 모든 시작 위치 비교', [
+      { label: '구축', factors: [['0', '미리 할 작업 없음']], ops: [], result: 'O(1)' },
+      { label: '검색', factors: [['r', '입력 시작 위치'], ['N', '원곡 시작 위치'], ['r', '비교 한 번 최대 칸']], ops: ['×', '×'], result: 'O(r²·N)' }
+    ], ['N = 원곡 전체 음 개수(조각 수), r = 입력 음 개수(최대 32)', '미리 만든 구조가 없어 입력이 올 때마다 원곡의 모든 시작 위치를 처음부터 확인', '시작 위치 쌍 r × N개마다 최대 r칸 비교, 대부분 몇 칸 안에 끝나 실제로는 r × N에 가까움', 'r은 32 이하로 고정이라 원곡이 10배 늘면 비교도 10배, 그래서 O(N)']),
     codeStep('01_linear_array.cpp')
   ]
 });

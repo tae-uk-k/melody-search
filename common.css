@@ -198,6 +198,12 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .nl span.old{background:var(--blue-weak);color:var(--blue-ink)}
 .nl span.out{opacity:.3}
 
+.fx{width:112px;height:84px;border-radius:16px;background:var(--fill);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;white-space:normal}
+.fx b{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.fx span{padding:0 8px;font-size:13.5px;line-height:1.3;font-weight:600;color:var(--sub)}
+.op{height:84px;display:grid;place-items:center;font-size:24px;font-weight:600;color:var(--mute)}
+.res{height:84px;display:flex;align-items:center;font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--blue-ink)}
+
 /* 문제 정의 페이지 (글) */
 .pills a{display:inline-flex;align-items:center;height:34px;border-radius:17px;padding:0 13px;background:var(--card);color:var(--mute);font-size:14px;font-weight:600}
 .pills a.on{background:var(--ink);color:var(--card)}
