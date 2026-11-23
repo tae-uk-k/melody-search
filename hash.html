@@ -18,7 +18,7 @@
 </aside>
 <div class="content">
 <div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
-<main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section></main>
+<main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section><p class="desc" id="desc" aria-live="polite" hidden></p></main>
 <footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
 </div>
 </div>
@@ -147,6 +147,15 @@ const lineTitle = (t, last) => {
 const QI = M.best[0].i;
 const other = pcs.find(p => cnt[p.b] > 2 && pcs.some(o => o.b === p.b && o.h !== p.h));
 const QO = other ? Q.notes.findIndex((_, i) => i + LEN <= r && qHash(i).b === other.b) : -1;
+// 그림 아래 설명에 쓰는 값
+const tags = list => list.map(p => p.m.tag + p.s).join(', ');
+const b0 = pcs[0].b, qb = qHash(QI).b, ob = QO >= 0 ? qHash(QO).b : -1;
+const okAt = (b, h) => tags(pcs.filter(p => p.b === b && p.h === h)), dropAt = (b, h) => tags(pcs.filter(p => p.b === b && p.h !== h));
+const lineDesc = t => {
+  if (!t.mid) return '길이마다 해당 길이 표에 입력과 일치하는 조각이 있는지 확인. 있으면 더 긴 쪽, 없으면 더 짧은 쪽으로 범위 축소.';
+  if (t.lo > t.hi) return `더 확인할 길이가 없어 탐색 종료. 확인한 길이 중 일치가 있는 가장 긴 길이 ${L}칸이 정답.`;
+  return `${t.mid}칸 일치가 ${t.ok ? '있으므로 더 긴' : '없으므로 더 짧은'} ${t.lo}~${t.hi}칸만 다음 확인 대상.`;
+};
 
 startPage({
   W,
@@ -154,27 +163,27 @@ startPage({
   steps: [
     changeStep(M),
     { phase: '구축', label: '해시값', title: `길이 ${LEN}인 조각 하나를 숫자 하나로 변환`, frames: [
-      { draw: hashA(false) },
-      { title: `숫자를 조각 수 ${NB}로 나눈 나머지 = 칸 번호`, draw: hashA(true) }
+      { desc: '조각 앞 4칸의 번호를 정해진 식으로 계산해 큰 숫자 하나로 변환. 같은 조각은 항상 같은 숫자.', draw: hashA(false) },
+      { title: `숫자를 조각 수 ${NB}로 나눈 나머지 = 칸 번호`, desc: `칸 수는 길이 ${LEN} 조각 수와 같은 ${NB}개. 나머지가 ${b0}이므로 A0 조각은 ${b0}번 칸에 저장.`, draw: hashA(true) }
     ] },
     { phase: '구축', label: '표에 넣기', title: `길이 ${LEN}인 조각 ${NB}개를 각자 칸에 넣기`, frames: [
-      { draw: chained(false) },
-      { title: '한 칸에 여러 조각이 모이면 줄줄이 연결 (체이닝)', draw: chained(true) }
+      { desc: `길이 ${LEN} 조각을 모두 같은 방법으로 칸에 배치. 빈 칸도 있고 여러 개가 모인 칸도 있음.`, draw: chained(false) },
+      { title: '한 칸에 여러 조각이 모이면 줄줄이 연결 (체이닝)', desc: 'A와 C처럼 같은 모양의 조각은 반드시 같은 칸. 모양이 다른 조각도 우연히 같은 칸에 모일 수 있음(충돌).', draw: chained(true) }
     ] },
     { phase: '구축', label: '한 줄 저장', title: '칸 순서대로 배열 한 줄에 이어 저장', frames: [
-      { draw: store(undefined) },
-      { title: '칸에는 자기 항목의 시작 위치만 기록', draw: store(pcs[0].b) }
+      { desc: '칸마다 따로 목록을 두지 않고, 항목을 칸 번호 순서로 배열 하나에 이어 붙임. 메모리를 덜 쓰고 연속해서 읽기 쉬운 구조.', draw: store(undefined) },
+      { title: '칸에는 자기 항목의 시작 위치만 기록', desc: `${b0}번 칸의 숫자 ${off[b0]}: 항목 배열 ${off[b0]}번부터가 ${b0}번 칸의 항목이라는 뜻. 다음 칸의 시작 위치 ${off[b0 + 1]} 전까지가 해당 범위.`, draw: store(pcs[0].b) }
     ] },
-    { phase: '구축', label: '길이별 표', title: '길이 1~7, 길이마다 표 하나씩 생성', frames: [{ draw: lenRows }] },
+    { phase: '구축', label: '길이별 표', title: '길이 1~7, 길이마다 표 하나씩 생성', desc: '입력과 몇 칸이 일치할지 미리 알 수 없어 길이 1~7 표를 모두 생성. 표마다 조각을 다시 저장해 정렬 배열보다 메모리를 더 사용.', frames: [{ draw: lenRows }] },
     { phase: '검색', label: '칸 찾기', title: '입력 조각도 같은 방법으로 칸 번호 계산', frames: [
-      { draw: find(QI, false) },
-      { title: '그 칸의 항목만 꺼내 실제 음과 비교해 확인', draw: find(QI, true) },
-      ...(QO >= 0 ? [{ title: '다른 조각이 섞인 칸에서는 해시값이 같은 항목만 선택', draw: find(QO, true) }] : [])
+      { desc: `입력 조각 Q${QI}도 같은 식으로 숫자를 계산. 원곡과 같은 모양이면 같은 숫자라 같은 ${qb}번 칸.`, draw: find(QI, false) },
+      { title: '그 칸의 항목만 꺼내 실제 음과 비교해 확인', desc: `${qb}번 칸의 항목만 확인하고 다른 칸은 보지 않음. 해시값과 실제 음이 모두 같은 ${okAt(qb, qHash(QI).h)} 확인.`, draw: find(QI, true) },
+      ...(QO >= 0 ? [{ title: '다른 조각이 섞인 칸에서는 해시값이 같은 항목만 선택', desc: `입력 조각 Q${QO}가 가는 ${ob}번 칸에는 다른 조각 ${dropAt(ob, qHash(QO).h)}도 섞여 있음. 저장해 둔 해시값이 달라 바로 제외(흐린 칸).`, draw: find(QO, true) }] : [])
     ] },
     { phase: '검색', label: '길이 좁히기', title: `길이 1~${r} 범위를 절반씩 줄여 가장 긴 일치 길이 탐색`, frames:
-      narrow.map((t, k) => ({ title: lineTitle(t, k === narrow.length - 1) || undefined, draw: line(t) })) },
+      narrow.map((t, k) => ({ title: lineTitle(t, k === narrow.length - 1) || undefined, desc: lineDesc(t), draw: line(t) })) },
     resultStep(M),
-    costStep('hash', '곡 수가 늘어도 검색 시간은 거의 일정', 'us')
+    costStep('hash', '곡 수가 늘어도 검색 시간은 거의 일정', 'us', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 입력 조각이 들어갈 칸만 확인하므로 데이터 크기와 거의 무관.')
   ]
 });
 }

@@ -132,9 +132,9 @@ function changeStep(M) {
   return {
     phase: '구축', label: '변화 기호', title: '음 높이 대신 앞 음과의 변화를 기호로 기록',
     frames: [
-      { title: '저장할 원곡 3곡', draw: () => ({ W, H: top(3) - 30, items: rows('contour') }) },
-      { draw: () => ({ W, H: top(3) - 10, items: rows('both') }) },
-      { title: '키가 달라도 같은 노래는 같은 기호', draw: () => ({ W, H: PY + 3 * 52, items: rows('tiles') }) }
+      { title: '저장할 원곡 3곡', desc: '막대 높이는 음 높이, 막대 길이는 음 길이. A와 C는 같은 노래를 다른 키로 부른 곡.', draw: () => ({ W, H: top(3) - 30, items: rows('contour') }) },
+      { desc: '칸마다 바로 앞 음과의 높이 차이, 길이 비율을 번호 하나로 기록. 같은 변화는 같은 번호. 첫 칸의 점은 시작 표시.', draw: () => ({ W, H: top(3) - 10, items: rows('both') }) },
+      { title: '키가 달라도 같은 노래는 같은 기호', desc: 'A와 C는 음 높이가 달라도 번호가 모두 같음. 이후 비교는 원래 음 대신 이 번호로만 진행.', draw: () => ({ W, H: PY + 3 * 52, items: rows('tiles') }) }
     ]
   };
 }
@@ -152,16 +152,17 @@ function resultStep(M) {
   items.push({ id: 'ct-Q', x: X, y: qY, html: contourHTML(M.query, { on: j => [...qi].some(i => j >= i && j < i + M.L), dim: j => ![...qi].some(i => j >= i && j < i + M.L) }) });
   return {
     phase: '결과', label: '결과', title: `가장 긴 일치 ${M.L}칸, 해당 곡 ${M.names.length}곡`,
+    desc: `파란 구간끼리 같은 멜로디. 입력 ${[...qi].map(i => `${i + 1}~${i + M.L}번째 음`).join(', ')}이 ${M.names.join(', ')}와 일치.`,
     frames: [{ draw: () => ({ W, H: qY + 52, items }) }]
   };
 }
 // 데이터 증가 (실험 결과 막대)
-function costStep(key, title, unit) {
+function costStep(key, title, unit, desc) {
   const rows = MEASURED[key], max = Math.max(...rows.map(r => r[1]));
   const fmt = v => unit === 'ms' ? (v / 1000 >= 100 ? Math.round(v / 1000) : (v / 1000).toFixed(1)) + 'ms' : v.toFixed(1) + 'µs';
   const html = `<div class="cap">실험 측정 검색 시간 (입력 16칸)</div><div style="height:16px"></div><div class="bars">${rows.map(([k, v]) =>
     `<span class="k">${k}</span><span class="tr"><i style="width:${v / max * 100}%"></i></span><span class="v">${fmt(v)}</span>`).join('')}</div>`;
-  return { phase: '결과', label: '데이터 증가', title, frames: [{ draw: () => ({ W: 608, H: 200, items: [{ id: 'cost', x: PX, y: PY, html }] }) }] };
+  return { phase: '결과', label: '데이터 증가', title, desc, frames: [{ draw: () => ({ W: 608, H: 200, items: [{ id: 'cost', x: PX, y: PY, html }] }) }] };
 }
 
 // ---------- 단계 엔진 ----------
@@ -200,13 +201,13 @@ function startPage(cfg) {
   }
   function size() {
     const W = Math.max(cur.W, cfg.W || 0);
-    SC = Math.min(1, Math.max(.5, fitEl.clientWidth / W));
+    SC = Math.min(1, fitEl.clientWidth / W);
     stage.style.width = W + 'px'; stage.style.height = cur.H + 'px'; stage.style.transform = `scale(${SC})`;
     box.style.width = W * SC + 'px'; box.style.height = cur.H * SC + 'px';
   }
   function follow() {
     if (cur.focus == null) return;
-    const top = document.querySelector('.bar').offsetHeight, bottom = document.querySelector('.cta').offsetHeight;
+    const top = document.querySelector('.bar').offsetHeight, bottom = document.querySelector('.cta').offsetHeight + ($('desc').offsetHeight || 0) + 12;
     const y = box.getBoundingClientRect().top + cur.focus * SC;
     if (y > top + 24 && y < innerHeight - bottom - 60) return;
     scrollTo({ top: Math.max(0, scrollY + y - top - (innerHeight - top - bottom) / 2), behavior: calm.matches ? 'auto' : 'smooth' });
@@ -217,6 +218,8 @@ function startPage(cfg) {
     apply(cur.items); size();
     $('phase').textContent = st.phase;
     $('title').textContent = fr.title || st.title;
+    const d = fr.desc || st.desc || '';
+    $('desc').textContent = d; $('desc').hidden = !d;
     $('prog').style.width = (f / (frames.length - 1) * 100) + '%';
     document.querySelectorAll('#steps button').forEach(b => { const s = +b.dataset.s; b.classList.toggle('on', s === fr.si); b.classList.toggle('done', s < fr.si); });
     $('prev').disabled = f === 0;
