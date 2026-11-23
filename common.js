@@ -167,6 +167,13 @@ function costStep(key, title, unit, desc) {
 
 // [[용어]] 표시: 정확한 용어에 형광펜 밑줄
 const term = t => esc(t).replace(/\[\[(.+?)\]\]/g, '<mark>$1</mark>');
+// 설명 칸: 문장마다 번호, 숫자는 굵게
+const numBold = t => t.replace(/(?<![A-Za-z\d])([+×]?\d[\d,]*(?:~\d+)?(?:번째|칸|개|번|곳|배)?)/g, '<b>$1</b>');
+const descHTML = d => {
+  const items = (Array.isArray(d) ? d : d.split(/(?<=\.)\s+/)).map(x => x.replace(/\.$/, '')).filter(Boolean);
+  const one = x => numBold(term(x));
+  return items.length > 1 ? `<ol>${items.map(x => `<li>${one(x)}</li>`).join('')}</ol>` : `<p>${one(items[0] || '')}</p>`;
+};
 
 // 코드 단계 (각 방식 마지막)
 function codeStep(file) {
@@ -238,7 +245,7 @@ function startPage(cfg) {
     $('phase').textContent = st.phase;
     $('title').innerHTML = term(fr.title || st.title);
     const d = fr.desc || st.desc || '';
-    $('desc').innerHTML = Array.isArray(d) ? `<ol>${d.map(x => `<li>${term(x)}</li>`).join('')}</ol>` : term(d);
+    $('desc').innerHTML = d ? descHTML(d) : '';
     $('desc').hidden = !d;
     $('prog').style.width = (f / (frames.length - 1) * 100) + '%';
     document.querySelectorAll('#steps button').forEach(b => { const s = +b.dataset.s; b.classList.toggle('on', s === fr.si); b.classList.toggle('done', s < fr.si); });
