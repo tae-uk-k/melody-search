@@ -2,7 +2,7 @@
    IDEA    토스 앱의 한 화면 한 메시지 흐름. 큰 제목, 흰 카드, 아래 고정 버튼
    PICTURE 카드 안에서 실제 데이터 칸이 움직이는 자료구조 그림
    COLOUR  회색 바탕, 흰 카드, 토스 파랑 하나만 강조. 곡 구분은 색이 아니라 글자
-   TYPE    Noto Sans KR 700 제목, 600·400 본문
+   TYPE    IBM Plex Sans KR (제목 700, 본문 400·500), 코드는 JetBrains Mono. 정확한 용어는 형광펜 밑줄
    LAYOUT  왼쪽: 페이지 메뉴와 단계 목록(좁은 화면에서는 위). 가운데: 제목과 그림 카드. 아래: 이전·다음 버튼 */
 :root{
   color-scheme:light dark;
@@ -16,16 +16,18 @@
   --blue:light-dark(#3182f6,#4593fc);
   --blue-weak:light-dark(#e8f3ff,#1a2a42);
   --blue-ink:light-dark(#1b64da,#93c2ff);
+  --mark:light-dark(#cfe3ff,#24406a);
 }
 :root[data-theme=light]{color-scheme:light}
 :root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:16px/1.5 "Pretendard Variable",Pretendard,"Noto Sans KR",-apple-system,"Apple SD Gothic Neo",system-ui,sans-serif;font-feature-settings:"tnum";-webkit-font-smoothing:antialiased;overflow-x:clip;word-break:keep-all}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "IBM Plex Sans KR","Pretendard Variable",Pretendard,"Noto Sans KR",-apple-system,"Apple SD Gothic Neo",system-ui,sans-serif;font-feature-settings:"tnum";-webkit-font-smoothing:antialiased;overflow-x:clip;word-break:keep-all}
 a{color:inherit;text-decoration:none}
 
 .side{max-width:960px;margin:0 auto;padding:16px max(3vw,16px) 0}
 .brand{display:none}
+.mark{flex:none;width:34px;height:18px;fill:var(--blue)}
 .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px;border-radius:14px;background:var(--fill)}
 .tabs a{height:44px;border-radius:11px;display:grid;place-items:center;font-size:15px;font-weight:600;color:var(--mute);white-space:nowrap}
 .tabs a[aria-current=page]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0/.08)}
@@ -43,7 +45,7 @@ a{color:inherit;text-decoration:none}
 @media(min-width:960px){
   .app{display:grid;grid-template-columns:248px minmax(0,1fr)}
   .side{position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;max-width:none;margin:0;padding:28px 14px 32px;background:var(--card);border-right:1px solid var(--line)}
-  .brand{display:block;margin:0 12px 20px;font-size:17px;font-weight:700}
+  .brand{display:flex;align-items:center;gap:10px;margin:0 12px 22px;font-size:17px;font-weight:700;letter-spacing:-.02em}
   .side .tabs{display:contents}
   .side .tabs a{order:1;display:flex;align-items:center;justify-content:flex-start;height:44px;margin-bottom:2px;padding:0 12px;border-radius:10px;font-size:16px;font-weight:600;color:var(--sub)}
   .side .tabs a:hover:not([aria-current]){background:var(--fill)}
@@ -63,19 +65,23 @@ a{color:inherit;text-decoration:none}
 .prog{height:3px;background:var(--line)}
 .prog i{display:block;height:100%;width:0;background:var(--blue);transition:width .4s}
 .tt{max-width:960px;margin:0 auto;padding:14px max(3vw,16px) 14px}
-.phase{margin:0;font-size:15px;font-weight:700;color:var(--blue-ink)}
-h1{margin:2px 0 0;font-size:clamp(22px,3.2vw,28px);line-height:1.3;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+.phase{display:inline-flex;align-items:center;height:26px;margin:0;padding:0 10px;border-radius:8px;background:var(--blue-weak);font-size:13px;font-weight:700;color:var(--blue-ink)}
+h1{margin:10px 0 0;font-size:clamp(22px,3.2vw,29px);line-height:1.35;font-weight:700;letter-spacing:-.03em;text-wrap:balance}
+mark{padding:0 2px;border-radius:2px;background:linear-gradient(transparent 58%,var(--mark) 58%);color:inherit;font-weight:inherit}
 
 .main{max-width:960px;margin:0 auto;padding:0 max(3vw,16px) 120px}
 .card{background:var(--card);border-radius:24px;padding:12px}
 .fit{overflow-x:auto;scrollbar-width:none}
 .fit::-webkit-scrollbar{display:none}
-.code{margin:0;padding:22px 24px;border-radius:24px;background:var(--card);color:var(--ink);font:14.5px/1.7 ui-monospace,"Cascadia Code",Consolas,"Noto Sans KR",monospace;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4}
-.code[hidden],.card[hidden]{display:none}
+.code{margin:0;padding:14px 16px 6px;color:var(--ink);font:14px/1.75 "JetBrains Mono",ui-monospace,Consolas,"IBM Plex Sans KR",monospace;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+.code[hidden],.fit[hidden]{display:none}
 .code b{font-weight:600;color:var(--blue-ink)}
 .code i{font-style:normal;color:var(--mute)}
-.desc{position:sticky;bottom:calc(84px + env(safe-area-inset-bottom));z-index:5;margin:12px 0 0;padding:18px 22px;border-radius:20px;background:var(--card);box-shadow:0 0 0 1px var(--line);font-size:16px;line-height:1.7;color:var(--sub)}
+.desc{margin:12px -12px -12px;padding:18px 24px 20px;border-top:1px solid var(--line);font-size:16px;line-height:1.7;color:var(--sub)}
 .desc[hidden]{display:none}
+.desc ol{margin:0;padding:0;list-style:none;counter-reset:n;display:grid;gap:6px}
+.desc li{counter-increment:n;display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start}
+.desc li::before{content:counter(n);width:24px;height:24px;margin-top:2px;border-radius:8px;background:var(--blue-weak);color:var(--blue-ink);display:grid;place-items:center;font-size:13px;font-weight:700}
 .box{position:relative;margin:0 auto;transition:height .4s}
 #stage{position:absolute;left:0;top:0;transform-origin:0 0}
 
@@ -182,8 +188,9 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .doc p,.doc li{margin:0 0 8px;font-size:16px;line-height:1.75}
 .doc p:last-child{margin-bottom:0}
 .doc ol,.doc ul{margin:0 0 10px;padding-left:22px}
-.doc code{padding:1px 6px;border-radius:6px;background:var(--fill);font:600 15px ui-monospace,Consolas,monospace}
-.doc pre{margin:0;padding:14px 16px;white-space:pre-wrap;border-radius:12px;background:var(--fill);font:15px/1.6 ui-monospace,Consolas,"Noto Sans KR",monospace;overflow-x:auto}
+.doc code{padding:1px 6px;border-radius:6px;background:var(--fill);font:500 14.5px "JetBrains Mono",ui-monospace,Consolas,monospace}
+.doc pre,.doc code{font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+.doc pre{margin:0;padding:14px 16px;white-space:pre-wrap;border-radius:12px;background:var(--fill);font:14.5px/1.65 "JetBrains Mono",ui-monospace,Consolas,"IBM Plex Sans KR",monospace;overflow-x:auto}
 .ex{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .go{display:flex;justify-content:flex-end;margin-top:20px}

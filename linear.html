@@ -6,19 +6,19 @@
 <title>순차 배열 검색</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="common.css">
 </head>
 <body>
 <div class="app">
 <aside class="side">
-  <p class="brand">최장 멜로디 검색</p>
+  <p class="brand"><svg class="mark" viewBox="0 0 38 20" aria-hidden="true"><rect x="0" y="15" width="5" height="4" rx="2"/><rect x="6.5" y="15" width="5" height="4" rx="2"/><rect x="13" y="8" width="5" height="4" rx="2"/><rect x="19.5" y="8" width="5" height="4" rx="2"/><rect x="26" y="2" width="5" height="4" rx="2"/><rect x="32.5" y="8" width="5.5" height="4" rx="2"/></svg>최장 멜로디 검색</p>
   <nav class="tabs" aria-label="페이지"><a href="index.html">문제 정의</a><a href="linear.html" aria-current="page">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html">체이닝 해시</a></nav>
   <nav class="steps" id="steps" aria-label="단계"></nav>
 </aside>
 <div class="content">
 <div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
-<main class="main"><section class="card" id="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section><pre class="code" id="code" hidden></pre><p class="desc" id="desc" aria-live="polite" hidden></p></main>
+<main class="main"><section class="card" id="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div><pre class="code" id="code" hidden></pre><div class="desc" id="desc" aria-live="polite" hidden></div></section></main>
 <footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
 </div>
 </div>
@@ -148,15 +148,15 @@ startPage({
     { phase: '구축', label: '그대로 저장', title: '곡을 받은 그대로 저장, 미리 할 작업 없음', desc: '순차 배열은 미리 정리하지 않음. 검색할 때마다 저장된 곡 전체를 처음부터 끝까지 확인.', frames: [{ draw: plain }] },
     { phase: '검색', label: '한 번 비교', title: '입력을 곡 아래에 겹쳐 놓고 앞에서부터 한 칸씩 비교', frames: [
       { title: '입력 첫 음을 곡 첫 음 아래에 맞춤', desc: '입력(Q)을 곡(A) 아래에 놓고 같은 세로줄끼리 비교. 흐린 칸은 서로 겹치지 않아 비교하지 않는 칸.', draw: () => pair(0, 0, false) },
-      { title: '두 번째 칸에서 모양이 달라져 1칸만 일치', desc: '첫 칸 쌍으로 높이 차이와 길이 비율을 정한 뒤 다음 칸도 같은지 확인. 테두리 칸에서 달라져 비교 중단.', draw: () => pair(0, 0, true) },
+      { title: '두 번째 칸에서 모양이 달라져 1칸만 일치', desc: ['첫 칸 쌍으로 높이 차이와 길이 비율 결정', '다음 칸도 같은 차이와 비율인지 확인', '테두리 칸에서 달라져 비교 중단'], draw: () => pair(0, 0, true) },
       { title: '입력 두 번째 음부터 맞추면 7칸 모두 일치', desc: '입력을 한 칸 옮기면 높이 차이 +7, 길이 비율 ×2가 끝까지 유지. 곡 전체와 일치.', draw: () => pair(1, 0, true) }
     ] },
-    { phase: '검색', label: '전체 반복', title: `시작 위치를 바꿔 가며 같은 비교를 ${r * total}번 반복`, frames: [
-      { desc: '왼쪽 Q0~Q7은 입력의 시작 위치, A·B·C 아래 네모는 각 곡의 시작 위치. 네모 하나마다 앞 단계의 비교를 한 번 실행.', draw: () => matrix(false) },
+    { phase: '검색', label: '완전 탐색', title: `[[완전 탐색]]: 시작 위치 쌍 ${r * total}개를 모두 비교`, frames: [
+      { desc: ['왼쪽 Q0~Q7은 입력의 시작 위치, A·B·C 아래 네모는 각 곡의 시작 위치', '네모 하나마다 앞 단계의 비교를 한 번 실행', '건너뛰는 경우 없이 모든 쌍 확인'], draw: () => matrix(false) },
       { title: '네모 하나가 비교 한 번의 결과, 진할수록 길게 일치', desc: '숫자 7이 가장 긴 일치. 곡이 늘어나면 이 표의 세로줄도 그만큼 늘어나 비교 횟수가 데이터에 비례.', draw: () => matrix(true) }
     ] },
     resultStep(M),
-    costStep('linear', '곡 수가 10배 늘면 검색 시간도 10배 증가', 'ms', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 모든 위치를 비교하므로 데이터에 비례해 증가.'),
+    costStep('linear', '[[O(N) 선형 시간]]: 곡 수가 10배면 검색 시간도 10배', 'ms', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 모든 위치를 비교하므로 데이터에 비례해 증가.'),
     codeStep('01_linear_array.cpp')
   ]
 });

@@ -6,19 +6,19 @@
 <title>정렬 배열 검색</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="common.css">
 </head>
 <body>
 <div class="app">
 <aside class="side">
-  <p class="brand">최장 멜로디 검색</p>
+  <p class="brand"><svg class="mark" viewBox="0 0 38 20" aria-hidden="true"><rect x="0" y="15" width="5" height="4" rx="2"/><rect x="6.5" y="15" width="5" height="4" rx="2"/><rect x="13" y="8" width="5" height="4" rx="2"/><rect x="19.5" y="8" width="5" height="4" rx="2"/><rect x="26" y="2" width="5" height="4" rx="2"/><rect x="32.5" y="8" width="5.5" height="4" rx="2"/></svg>최장 멜로디 검색</p>
   <nav class="tabs" aria-label="페이지"><a href="index.html">문제 정의</a><a href="linear.html">순차 배열</a><a href="sorted.html" aria-current="page">정렬 배열</a><a href="hash.html">체이닝 해시</a></nav>
   <nav class="steps" id="steps" aria-label="단계"></nav>
 </aside>
 <div class="content">
 <div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
-<main class="main"><section class="card" id="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section><pre class="code" id="code" hidden></pre><p class="desc" id="desc" aria-live="polite" hidden></p></main>
+<main class="main"><section class="card" id="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div><pre class="code" id="code" hidden></pre><div class="desc" id="desc" aria-live="polite" hidden></div></section></main>
 <footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
 </div>
 </div>
@@ -249,7 +249,7 @@ startPage({
   next: { href: 'hash.html', label: '다음 방식: 체이닝 해시' },
   steps: [
     changeStep(M),
-    { phase: '구축', label: '조각', title: '음마다 그 음부터 곡 끝까지 잘라 조각 생성', frames: [
+    { phase: '구축', label: '조각', title: '음마다 그 음부터 곡 끝까지 잘라 조각([[접미사]]) 생성', frames: [
       { desc: '곡 A를 음마다 잘라 조각 7개 생성. 조각마다 그 음부터 곡 끝까지 포함하고, 첫 칸은 시작 표시.', draw: cut },
       { title: `조각 ${n}개를 배열 하나에 모음`, desc: '곡 3개에서 나온 조각을 배열 하나에 모은 상태. 아직 곡 순서대로 놓여 있음.', draw: gather }
     ] },
@@ -261,18 +261,18 @@ startPage({
       { desc: '입력도 원곡과 같은 규칙으로 변화 번호로 바꿈. 키와 빠르기가 달라도 같은 번호.', draw: qIntro },
       { title: `입력도 음마다 잘라 조각 ${r}개 생성`, desc: '입력 조각마다 정렬된 배열에서 들어갈 자리를 찾는 것이 다음 단계. 예시로 가장 길게 일치하는 Q1 조각을 따라감.', draw: qCut }
     ] },
-    { phase: '검색', label: '자리 찾기', title: `Q${QI} 조각이 들어갈 자리 탐색, 범위를 절반씩 축소`, frames: [
-      { desc: '왼쪽 파란 선이 남은 검색 범위. 범위의 가운데 조각과 비교해 범위를 반으로 줄이는 이진 탐색.', draw: ready },
+    { phase: '검색', label: '이진 탐색', title: `[[이진 탐색]]([[하한 탐색]])으로 Q${QI} 조각이 들어갈 자리 찾기`, frames: [
+      { desc: ['왼쪽 파란 선이 남은 검색 범위', '범위의 가운데 조각과 Q1 조각 비교', 'Q1 조각이 더 앞이면 위쪽, 더 뒤면 아래쪽 절반만 남김', '범위가 한 칸이 될 때까지 반복'], draw: ready },
       ...S.log.map((t, k) => ({ title: say(t, k + 1), desc: why(t), draw: compare(t) })),
       { title: `비교 ${S.log.length}번 만에 들어갈 자리 발견`, desc: `범위가 한 칸으로 줄어든 자리에 Q${QI} 조각을 넣은 모습. 조각 ${n}개 중 ${S.log.length}개만 비교.`, draw: found }
     ] },
-    { phase: '검색', label: '이웃 비교', title: '바로 위아래 조각과 앞에서부터 같은 칸 수 비교', frames: [
+    { phase: '검색', label: '이웃 비교', title: '바로 위아래 조각과 앞에서부터 같은 칸 수([[최장 공통 접두사]]) 비교', frames: [
       { desc: `정렬되어 있으므로 가장 많이 일치하는 조각은 바로 위나 바로 아래에 위치. 위 조각 ${ku}칸, 아래 조각 ${kd}칸 일치.`, draw: neighbors },
       { title: `입력 조각 ${r}개 모두 같은 방법 적용, 가장 긴 일치는 ${L}칸`, desc: `칠한 길이가 조각마다 찾은 최대 일치 길이. Q${QI} 조각의 ${L}칸이 가장 길어 정답 길이로 결정.`, draw: every }
     ] },
-    { phase: '검색', label: '곡 모으기', title: `${L}칸 일치 조각이 이어지는 동안 위아래로 넓혀 곡 수집`, desc: `${L}칸 일치가 끊길 때까지 위아래로 이동하며 곡 이름 수집. 테두리 칸이 있는 조각에서 멈춤.`, frames: [{ draw: collect }] },
+    { phase: '검색', label: '곡 모으기', title: `${L}칸 일치 조각이 이어지는 동안 위아래로 넓혀 곡 수집`, desc: [`Q${QI} 조각의 바로 위아래에서 시작`, `${L}칸 일치가 이어지는 동안 한 칸씩 이동하며 곡 이름 수집`, '테두리 칸이 있는 조각에서 멈춤'], frames: [{ draw: collect }] },
     resultStep(M),
-    costStep('sorted', '곡 수가 10배 늘어도 검색 시간은 소폭 증가', 'us', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 이진 탐색이라 데이터가 100배 늘어도 비교 횟수는 몇 번만 증가.'),
+    costStep('sorted', '[[O(log N) 로그 시간]]: 곡 수가 10배 늘어도 검색 시간은 소폭 증가', 'us', '데이터 항목 수를 1만, 10만, 100만으로 늘리며 C++로 잰 입력 1개의 검색 시간. 이진 탐색이라 데이터가 100배 늘어도 비교 횟수는 몇 번만 증가.'),
     codeStep('02_sorted_array.cpp')
   ]
 });

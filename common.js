@@ -133,7 +133,7 @@ function changeStep(M) {
     phase: '구축', label: '변화 기호', title: '음 높이 대신 앞 음과의 변화를 기호로 기록',
     frames: [
       { title: '저장할 원곡 3곡', desc: '막대 높이는 음 높이, 막대 길이는 음 길이. A와 C는 같은 노래를 다른 키로 부른 곡.', draw: () => ({ W, H: top(3) - 30, items: rows('contour') }) },
-      { desc: '칸마다 바로 앞 음과의 높이 차이, 길이 비율을 번호 하나로 기록. 같은 변화는 같은 번호. 첫 칸의 점은 시작 표시.', draw: () => ({ W, H: top(3) - 10, items: rows('both') }) },
+      { desc: ['칸마다 바로 앞 음과 비교', '높이 차이와 길이 비율을 번호 하나로 기록, 같은 변화는 같은 번호', '첫 칸의 점은 조각의 시작 표시'], draw: () => ({ W, H: top(3) - 10, items: rows('both') }) },
       { title: '키가 달라도 같은 노래는 같은 기호', desc: 'A와 C는 음 높이가 달라도 번호가 모두 같음. 이후 비교는 원래 음 대신 이 번호로만 진행.', draw: () => ({ W, H: PY + 3 * 52, items: rows('tiles') }) }
     ]
   };
@@ -164,6 +164,9 @@ function costStep(key, title, unit, desc) {
     `<span class="k">${k}</span><span class="tr"><i style="width:${v / max * 100}%"></i></span><span class="v">${fmt(v)}</span>`).join('')}</div>`;
   return { phase: '결과', label: '데이터 증가', title, desc, frames: [{ draw: () => ({ W: 608, H: 200, items: [{ id: 'cost', x: PX, y: PY, html }] }) }] };
 }
+
+// [[용어]] 표시: 정확한 용어에 형광펜 밑줄
+const term = t => esc(t).replace(/\[\[(.+?)\]\]/g, '<mark>$1</mark>');
 
 // 코드 단계 (각 방식 마지막)
 function codeStep(file) {
@@ -220,22 +223,23 @@ function startPage(cfg) {
   }
   function follow() {
     if (!cur || cur.focus == null) return;
-    const top = document.querySelector('.bar').offsetHeight, bottom = document.querySelector('.cta').offsetHeight + ($('desc').offsetHeight || 0) + 12;
+    const top = document.querySelector('.bar').offsetHeight, bottom = document.querySelector('.cta').offsetHeight;
     const y = box.getBoundingClientRect().top + cur.focus * SC;
     if (y > top + 24 && y < innerHeight - bottom - 60) return;
     scrollTo({ top: Math.max(0, scrollY + y - top - (innerHeight - top - bottom) / 2), behavior: calm.matches ? 'auto' : 'smooth' });
   }
   function render() {
     const fr = frames[f], st = cfg.steps[fr.si];
-    $('card').hidden = !!fr.code; $('code').hidden = !fr.code;
+    $('fit').hidden = !!fr.code; $('code').hidden = !fr.code;
     if (fr.code) {
       cur = null;
       if (!$('code')._done) { $('code').innerHTML = highlight($('src').textContent.trim()); $('code')._done = true; }
     } else { cur = fr.draw(); apply(cur.items); size(); }
     $('phase').textContent = st.phase;
-    $('title').textContent = fr.title || st.title;
+    $('title').innerHTML = term(fr.title || st.title);
     const d = fr.desc || st.desc || '';
-    $('desc').textContent = d; $('desc').hidden = !d;
+    $('desc').innerHTML = Array.isArray(d) ? `<ol>${d.map(x => `<li>${term(x)}</li>`).join('')}</ol>` : term(d);
+    $('desc').hidden = !d;
     $('prog').style.width = (f / (frames.length - 1) * 100) + '%';
     document.querySelectorAll('#steps button').forEach(b => { const s = +b.dataset.s; b.classList.toggle('on', s === fr.si); b.classList.toggle('done', s < fr.si); });
     $('prev').disabled = f === 0;
