@@ -3,7 +3,7 @@
    PICTURE 카드 안에서 실제 데이터 칸이 움직이는 자료구조 그림
    COLOUR  회색 바탕, 흰 카드, 토스 파랑 하나만 강조. 곡 구분은 색이 아니라 글자
    TYPE    Noto Sans KR 700 제목, 600·400 본문
-   LAYOUT  위: 방식 탭과 단계 목록. 가운데: 제목과 그림 카드. 아래: 이전·다음 버튼 */
+   LAYOUT  왼쪽: 페이지 메뉴와 단계 목록(좁은 화면에서는 위). 가운데: 제목과 그림 카드. 아래: 이전·다음 버튼 */
 :root{
   color-scheme:light dark;
   --bg:light-dark(#f2f4f6,#101013);
@@ -24,18 +24,37 @@ html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.5 "Pretendard Variable",Pretendard,"Noto Sans KR",-apple-system,"Apple SD Gothic Neo",system-ui,sans-serif;font-feature-settings:"tnum";-webkit-font-smoothing:antialiased;overflow-x:clip;word-break:keep-all}
 a{color:inherit;text-decoration:none}
 
-.head{max-width:960px;margin:0 auto;padding:16px max(3vw,16px) 0}
-.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:14px;background:var(--fill)}
-.tabs a{height:44px;border-radius:11px;display:grid;place-items:center;font-size:16px;font-weight:600;color:var(--mute);white-space:nowrap}
+.side{max-width:960px;margin:0 auto;padding:16px max(3vw,16px) 0}
+.brand{display:none}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px;border-radius:14px;background:var(--fill)}
+.tabs a{height:44px;border-radius:11px;display:grid;place-items:center;font-size:15px;font-weight:600;color:var(--mute);white-space:nowrap}
 .tabs a[aria-current=page]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0/.08)}
 .tabs a:hover:not([aria-current]){color:var(--ink)}
 .steps{display:flex;flex-wrap:wrap;gap:10px 20px;padding:16px 2px 4px}
 .grp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ph{font-size:14px;font-weight:700;color:var(--mute)}
+.ph{margin:0;font-size:14px;font-weight:700;color:var(--mute)}
 .pills{display:flex;gap:4px;flex-wrap:wrap}
 .pills button{height:34px;border:0;border-radius:17px;padding:0 13px;background:var(--card);color:var(--mute);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .pills button.done{color:var(--ink)}
 .pills button.on{background:var(--ink);color:var(--card)}
+.content{min-width:0}
+
+/* 넓은 화면: 왼쪽 메뉴 */
+@media(min-width:960px){
+  .app{display:grid;grid-template-columns:248px minmax(0,1fr)}
+  .side{position:sticky;top:0;height:100vh;overflow-y:auto;max-width:none;margin:0;padding:24px 14px 32px;background:var(--card);border-right:1px solid var(--line)}
+  .brand{display:block;margin:0 12px 16px;font-size:17px;font-weight:700}
+  .side .tabs{grid-template-columns:1fr;gap:2px;padding:0;border-radius:0;background:none}
+  .side .tabs a{display:flex;align-items:center;justify-content:flex-start;height:44px;padding:0 12px;border-radius:10px;font-size:16px}
+  .side .tabs a[aria-current=page]{background:var(--fill);box-shadow:none;font-weight:700}
+  .side .steps{flex-direction:column;flex-wrap:nowrap;gap:18px;margin-top:18px;padding:18px 0 0;border-top:1px solid var(--line)}
+  .side .grp{flex-direction:column;align-items:stretch;gap:2px}
+  .side .ph{padding:0 12px 4px}
+  .side .pills{flex-direction:column;flex-wrap:nowrap;gap:2px}
+  .side .pills button{width:100%;height:40px;padding:0 12px;border-radius:10px;background:none;text-align:left;font-size:15px}
+  .side .pills button:hover:not(.on){background:var(--fill)}
+  .side .pills button.on{background:var(--blue-weak);color:var(--blue-ink)}
+}
 
 .bar{position:sticky;top:0;z-index:10;background:var(--bg)}
 .prog{height:3px;background:var(--line)}
@@ -140,5 +159,20 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .nl span.old{background:var(--blue-weak);color:var(--blue-ink)}
 .nl span.out{opacity:.3}
 
-@media(max-width:600px){.tabs a{font-size:15px}.btn{height:52px;font-size:16px}.card{border-radius:20px;padding:8px}}
+/* 문제 정의 페이지 */
+.nums{display:flex}
+.nums span{flex:none;width:32px;height:32px;margin-right:4px;border-radius:9px;display:grid;place-items:center;font-size:15px;font-weight:700;color:var(--sub);transition:background .3s,color .3s,opacity .3s,box-shadow .3s}
+.nums.cal span{background:var(--blue-weak);color:var(--blue-ink)}
+.nums span.miss{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--ink)}
+.nums span.dim{opacity:.25}
+.stats{display:flex;gap:12px}
+.stat{width:250px;padding:20px 22px;border-radius:18px;background:var(--fill)}
+.stat b{display:block;font-size:32px;font-weight:700;letter-spacing:-.02em}
+.stat span{font-size:16px;font-weight:600;color:var(--sub)}
+.mrow{display:flex;align-items:center;gap:14px;width:560px;height:60px;padding:0 18px;border-radius:16px;background:var(--fill)}
+.mrow b{width:110px;font-size:18px;font-weight:700}
+.mrow span:last-child{font-size:16px;font-weight:600;color:var(--sub)}
+
+@media(max-width:600px){.tabs a{font-size:14px}.btn{height:52px;font-size:16px}.card{border-radius:20px;padding:8px}}
+@media(min-width:960px){.cta{left:248px}}
 @media(prefers-reduced-motion:reduce){.it,.tl,.prog i,.box,.mx b{transition:none!important}}

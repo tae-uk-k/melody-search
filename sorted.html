@@ -10,13 +10,18 @@
 <link rel="stylesheet" href="common.css">
 </head>
 <body>
-<header class="head">
-  <nav class="tabs" aria-label="자료구조"><a href="index.html">순차 배열</a><a href="sorted.html" aria-current="page">정렬 배열</a><a href="hash.html">체이닝 해시</a></nav>
+<div class="app">
+<aside class="side">
+  <p class="brand">최장 멜로디 검색</p>
+  <nav class="tabs" aria-label="페이지"><a href="index.html">문제 정의</a><a href="linear.html">순차 배열</a><a href="sorted.html" aria-current="page">정렬 배열</a><a href="hash.html">체이닝 해시</a></nav>
   <nav class="steps" id="steps" aria-label="단계"></nav>
-</header>
+</aside>
+<div class="content">
 <div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
 <main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section></main>
 <footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
+</div>
+</div>
 <script src="common.js"></script>
 <script>
 {
@@ -77,8 +82,8 @@ const qCut = () => ({ W, H: PY + 52 + r * RH + 10, items: qRow(Q.notes.map((_, i
 // 4. 자리 찾기: 비교 한 번 = 화면 한 장
 const say = (t, k) => {
   const p = order[t.mid];
-  if (t.k === plen(p.m, p.s) && t.k === plen(Q, QI)) return `${k}번째 비교, 끝까지 같아서 위쪽을 더 봐요`;
-  return t.lt ? `${k}번째 비교, 입력 조각이 더 뒤라서 아래쪽만 남겨요` : `${k}번째 비교, 입력 조각이 더 앞이라 위쪽만 남겨요`;
+  if (t.k === plen(p.m, p.s) && t.k === plen(Q, QI)) return `${k}번째 비교: 끝까지 같음, 위쪽 절반 계속 탐색`;
+  return t.lt ? `${k}번째 비교: 입력 조각이 더 뒤, 아래쪽 절반만 남김` : `${k}번째 비교: 입력 조각이 더 앞, 위쪽 절반만 남김`;
 };
 const range = (lo, hi) => ({ id: 'brk', x: LX - 22, y: rowY(lo), w: 4, h: (hi - lo) * RH - 6, html: '<div class="brk" style="height:100%"></div>' });
 const ready = () => ({ W, H: rowY(n) + 10, focus: rowY(0), items: [
@@ -133,30 +138,30 @@ startPage({
   next: { href: 'hash.html', label: '다음 방식: 체이닝 해시' },
   steps: [
     changeStep(M),
-    { phase: '구축', label: '조각', title: '시작 칸마다 끝까지 잘라 조각을 만들어요', frames: [
+    { phase: '구축', label: '조각', title: '음마다 그 음부터 곡 끝까지 잘라 조각 생성', frames: [
       { draw: cut },
-      { title: `조각 ${n}개를 배열 하나에 모아요`, draw: gather }
+      { title: `조각 ${n}개를 배열 하나에 모음`, draw: gather }
     ] },
-    { phase: '구축', label: '정렬', title: '앞 칸부터 비교해서 사전 순으로 줄 세워요', frames: [
+    { phase: '구축', label: '정렬', title: '앞 기호부터 비교해 사전 순으로 정렬', frames: [
       { draw: () => ({ W, H: rowY(n) + 10, items: list() }) },
-      { title: '앞부분이 비슷한 조각끼리 모여요', draw: () => ({ W, H: rowY(n) + 10, items: list({ row: (_, idx) => near(idx) >= 2 ? { tint: near(idx) } : {} }) }) }
+      { title: '앞부분이 같은 조각끼리 서로 이웃', draw: () => ({ W, H: rowY(n) + 10, items: list({ row: (_, idx) => near(idx) >= 2 ? { tint: near(idx) } : {} }) }) }
     ] },
-    { phase: '검색', label: '입력 조각', title: '입력도 변화 기호로 바꿔요', frames: [
+    { phase: '검색', label: '입력 조각', title: '입력도 같은 방법으로 변화 기호 변환', frames: [
       { draw: qIntro },
-      { title: `입력도 시작 칸마다 잘라 조각 ${r}개를 만들어요`, draw: qCut }
+      { title: `입력도 음마다 잘라 조각 ${r}개 생성`, draw: qCut }
     ] },
-    { phase: '검색', label: '자리 찾기', title: `입력 조각 Q${QI}이 들어갈 자리를 반씩 좁혀 찾아요`, frames: [
+    { phase: '검색', label: '자리 찾기', title: `Q${QI} 조각이 들어갈 자리 탐색, 범위를 절반씩 축소`, frames: [
       { draw: ready },
       ...S.log.map((t, k) => ({ title: say(t, k + 1), draw: compare(t) })),
-      { title: `비교 ${S.log.length}번 만에 들어갈 자리를 찾았어요`, draw: found }
+      { title: `비교 ${S.log.length}번 만에 들어갈 자리 발견`, draw: found }
     ] },
-    { phase: '검색', label: '이웃 비교', title: '바로 위아래 조각과 앞에서부터 몇 칸 같은지 세요', frames: [
+    { phase: '검색', label: '이웃 비교', title: '바로 위아래 조각과 앞에서부터 같은 칸 수 비교', frames: [
       { draw: neighbors },
-      { title: `입력 조각 ${r}개 모두 이렇게 세면 ${L}칸이 가장 길어요`, draw: every }
+      { title: `입력 조각 ${r}개 모두 같은 방법 적용, 가장 긴 일치는 ${L}칸`, draw: every }
     ] },
-    { phase: '검색', label: '곡 모으기', title: `${L}칸 같은 조각이 이어지는 동안 위아래로 넓혀 곡을 모아요`, frames: [{ draw: collect }] },
+    { phase: '검색', label: '곡 모으기', title: `${L}칸 일치 조각이 이어지는 동안 위아래로 넓혀 곡 수집`, frames: [{ draw: collect }] },
     resultStep(M),
-    costStep('sorted', '곡이 10배 늘어도 검색 시간은 조금만 늘어요', 'us')
+    costStep('sorted', '곡 수가 10배 늘어도 검색 시간은 소폭 증가', 'us')
   ]
 });
 }

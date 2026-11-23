@@ -10,13 +10,18 @@
 <link rel="stylesheet" href="common.css">
 </head>
 <body>
-<header class="head">
-  <nav class="tabs" aria-label="자료구조"><a href="index.html">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html" aria-current="page">체이닝 해시</a></nav>
+<div class="app">
+<aside class="side">
+  <p class="brand">최장 멜로디 검색</p>
+  <nav class="tabs" aria-label="페이지"><a href="index.html">문제 정의</a><a href="linear.html">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html" aria-current="page">체이닝 해시</a></nav>
   <nav class="steps" id="steps" aria-label="단계"></nav>
-</header>
+</aside>
+<div class="content">
 <div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
 <main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section></main>
 <footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
+</div>
+</div>
 <script src="common.js"></script>
 <script>
 {
@@ -100,7 +105,7 @@ const lenRows = () => {
   const total = counts.reduce((a, b) => a + b, 0);
   return { W, H: PY + 7 * 40 + 70, items: [
     ...counts.map((c, k) => ({ id: 'lr' + k, x: PX, y: PY + k * 40, html: `<div class="lenrow"><span class="k">길이 ${k + 1}</span><span class="sq ${k + 1 === LEN ? 'on' : ''}">${'<b></b>'.repeat(c)}</span><span class="n">${c}개</span></div>` })),
-    { id: 'tot', x: PX, y: PY + 7 * 40 + 16, html: `<span class="pill">조각 ${counts[0]}개를 항목 ${total}개로 저장해요</span>` }
+    { id: 'tot', x: PX, y: PY + 7 * 40 + 16, html: `<span class="pill">조각 ${counts[0]}개 → 저장 항목 ${total}개</span>` }
   ] };
 };
 
@@ -135,8 +140,8 @@ const line = t => () => ({ W, H: PY + 48 + 30, items: [{ id: 'nl', x: (W - NLW) 
 }).join('')}</div>` }] });
 const lineTitle = (t, last) => {
   if (!t.mid) return '';
-  if (!t.ok) return last ? `${t.mid}칸 표에는 없어요. 가장 긴 길이는 ${L}칸이에요` : `${t.mid}칸 표에는 없어요. 더 짧은 쪽을 봐요`;
-  return last ? `${t.mid}칸 표에도 있어요. 가장 긴 길이는 ${L}칸이에요` : `${t.mid}칸 표에 있어요. 더 긴 쪽을 봐요`;
+  if (!t.ok) return last ? `${t.mid}칸 일치 없음, 가장 긴 길이는 ${L}칸` : `${t.mid}칸 일치 없음, 더 짧은 길이 확인`;
+  return last ? `${t.mid}칸 일치 있음, 가장 긴 길이는 ${L}칸` : `${t.mid}칸 일치 있음, 더 긴 길이 확인`;
 };
 
 const QI = M.best[0].i;
@@ -145,31 +150,31 @@ const QO = other ? Q.notes.findIndex((_, i) => i + LEN <= r && qHash(i).b === ot
 
 startPage({
   W,
-  next: { href: 'index.html', label: '처음 방식부터 다시 보기' },
+  next: { href: 'index.html', label: '문제 정의부터 다시 보기' },
   steps: [
     changeStep(M),
-    { phase: '구축', label: '해시값', title: `길이 ${LEN} 조각 하나를 숫자 하나로 바꿔요`, frames: [
+    { phase: '구축', label: '해시값', title: `길이 ${LEN}인 조각 하나를 숫자 하나로 변환`, frames: [
       { draw: hashA(false) },
-      { title: `조각 수 ${NB}로 나눈 나머지가 칸 번호예요`, draw: hashA(true) }
+      { title: `숫자를 조각 수 ${NB}로 나눈 나머지 = 칸 번호`, draw: hashA(true) }
     ] },
-    { phase: '구축', label: '표에 넣기', title: `길이 ${LEN} 조각 ${NB}개를 모두 칸에 넣어요`, frames: [
+    { phase: '구축', label: '표에 넣기', title: `길이 ${LEN}인 조각 ${NB}개를 각자 칸에 넣기`, frames: [
       { draw: chained(false) },
-      { title: '한 칸에 여러 개가 모이면 줄줄이 이어 둬요', draw: chained(true) }
+      { title: '한 칸에 여러 조각이 모이면 줄줄이 연결 (체이닝)', draw: chained(true) }
     ] },
-    { phase: '구축', label: '한 줄 저장', title: '칸 순서대로 배열 한 줄에 이어 저장해요', frames: [
+    { phase: '구축', label: '한 줄 저장', title: '칸 순서대로 배열 한 줄에 이어 저장', frames: [
       { draw: store(undefined) },
-      { title: '칸에는 자기 항목이 몇 번부터인지만 적어요', draw: store(pcs[0].b) }
+      { title: '칸에는 자기 항목의 시작 위치만 기록', draw: store(pcs[0].b) }
     ] },
-    { phase: '구축', label: '길이별 표', title: '길이 1부터 7까지 길이마다 표를 만들어요', frames: [{ draw: lenRows }] },
-    { phase: '검색', label: '칸 찾기', title: '입력 조각도 같은 방법으로 칸 번호를 구해요', frames: [
+    { phase: '구축', label: '길이별 표', title: '길이 1~7, 길이마다 표 하나씩 생성', frames: [{ draw: lenRows }] },
+    { phase: '검색', label: '칸 찾기', title: '입력 조각도 같은 방법으로 칸 번호 계산', frames: [
       { draw: find(QI, false) },
-      { title: '그 칸의 항목만 꺼내 음을 비교해 확인해요', draw: find(QI, true) },
-      ...(QO >= 0 ? [{ title: '다른 조각이 섞인 칸에서는 해시값이 같은 항목만 골라요', draw: find(QO, true) }] : [])
+      { title: '그 칸의 항목만 꺼내 실제 음과 비교해 확인', draw: find(QI, true) },
+      ...(QO >= 0 ? [{ title: '다른 조각이 섞인 칸에서는 해시값이 같은 항목만 선택', draw: find(QO, true) }] : [])
     ] },
-    { phase: '검색', label: '길이 좁히기', title: `길이 1부터 ${r}까지 반씩 좁혀 가장 긴 길이를 찾아요`, frames:
+    { phase: '검색', label: '길이 좁히기', title: `길이 1~${r} 범위를 절반씩 줄여 가장 긴 일치 길이 탐색`, frames:
       narrow.map((t, k) => ({ title: lineTitle(t, k === narrow.length - 1) || undefined, draw: line(t) })) },
     resultStep(M),
-    costStep('hash', '곡이 늘어도 검색 시간이 거의 그대로예요', 'us')
+    costStep('hash', '곡 수가 늘어도 검색 시간은 거의 일정', 'us')
   ]
 });
 }

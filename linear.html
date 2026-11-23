@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>순차 배열 검색</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <p class="brand">최장 멜로디 검색</p>
+  <nav class="tabs" aria-label="페이지"><a href="index.html">문제 정의</a><a href="linear.html" aria-current="page">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html">체이닝 해시</a></nav>
+  <nav class="steps" id="steps" aria-label="단계"></nav>
+</aside>
+<div class="content">
+<div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
+<main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section></main>
+<footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
+</div>
+</div>
+<script src="common.js"></script>
+<script>
+{
+const M = buildModel(), { songs, query: Q } = M, A = songs[0], r = Q.notes.length;
+const X = PX + LBL, qY = PY + 3 * 60 + 24;
+
+// 1. 구축: 할 일이 없음. 곡과 입력을 받은 그대로 둔다
+const plain = () => {
+  const it = [];
+  songs.forEach((m, k) => {
+    it.push({ id: 'lab-' + m.tag, x: PX, y: PY + k * 60 + 6, html: labHTML(m) });
+    it.push({ id: 'ct-' + m.tag, x: X, y: PY + k * 60, html: contourHTML(m) });
+  });
+  it.push({ id: 'lab-Q', x: PX, y: qY + 6, html: labHTML(Q) });
+  it.push({ id: 'ct-Q', x: X, y: qY, html: contourHTML(Q) });
+  return { W: 700, H: qY + 52, items: it };
+};
+
+// 2. 한 쌍 비교: 입력 i번 칸을 곡 j번 칸 아래에 맞대고 한 칸씩 비교
+const pair = (i, j, show) => {
+  const k = rawMatch(Q, i, A, j), over = Math.min(plen(Q, i), plen(A, j));
+  const inA = c => c >= j && c < j + over, inQ = c => c >= i && c < i + over;
+  const it = [
+    { id: 'lab-A', x: PX, y: PY + 6, html: labHTML(A) },
+    { id: 'ct-A', x: X, y: PY, html: contourHTML(A, { on: c => show && c >= j && c < j + k, miss: show && k < over ? j + k : -1, dim: c => !inA(c) }) },
+    { id: 'lab-Q', x: PX, y: PY + 72, html: labHTML(Q) },
+    { id: 'ct-Q', x: X + (j - i) * 36, y: PY + 66, html: contourHTML(Q, { on: c => show && c >= i && c < i + k, miss: show && k < over ? i + k : -1, dim: c => !inQ(c) }) }
+  ];
+  if (show) it.push({ id: 'pill', x: X + 8 * 36 + 24, y: PY + 38, html: `<span class="pill ${k === over ? 'blue' : ''}">${k}칸 일치</span>` });
+  return { W: 700, H: PY + 66 + 60, items: it };
+};
+
+// 3. 모든 쌍: 입력 시작 칸 r개 × 곡 시작 칸 전부
+const total = songs.reduce((t, m) => t + m.notes.length, 0);
+const cols = `36px ${songs.map(m => `repeat(${m.notes.length},24px)`).join(' 8px ')}`;
+let mx = `<b class="rl"></b>` + songs.map((m, g) => `<b class="hd" style="grid-column:span ${m.notes.length}">${chip(m.tag)}</b>` + (g < songs.length - 1 ? '<b class="sp"></b>' : '')).join('');
+Q.notes.forEach((_, i) => {
+  mx += `<b class="rl">Q${i}</b>`;
+  let col = 0;
+  songs.forEach((m, g) => {
+    m.notes.forEach((_, j) => {
+      const k = rawMatch(Q, i, m, j), v = k > 1 ? `color-mix(in srgb,var(--blue) ${20 + 80 * (k - 1) / (M.L - 1)}%,var(--card))` : 'var(--fill)';
+      mx += `<b style="--v:${v};--d:${(col++) * 22 + i * 6}ms">${k === M.L ? k : ''}</b>`;
+    });
+    if (g < songs.length - 1) mx += '<b class="sp"></b>';
+  });
+});
+const matrix = fill => ({
+  W: 700, H: PY + 60 + (r + 1) * 28 + 10,
+  items: [
+    { id: 'cnt', x: PX, y: PY, html: `<span class="pill ${fill ? 'blue' : ''}">입력 시작 ${r}곳 × 곡 시작 ${total}곳 = ${r * total}번</span>` },
+    { id: 'mx', x: PX, y: PY + 56, html: `<div class="mx" style="grid-template-columns:${cols}">${mx}</div>`, cls: fill ? 'fill' : '' }
+  ]
+});
+
+startPage({
+  W: 700,
+  next: { href: 'sorted.html', label: '다음 방식: 정렬 배열' },
+  steps: [
+    { phase: '구축', label: '그대로 저장', title: '곡을 받은 그대로 저장, 미리 할 작업 없음', frames: [{ draw: plain }] },
+    { phase: '검색', label: '한 번 비교', title: '입력을 곡 아래에 겹쳐 놓고 앞에서부터 한 칸씩 비교', frames: [
+      { title: '입력 첫 음을 곡 첫 음 아래에 맞춤', draw: () => pair(0, 0, false) },
+      { title: '두 번째 칸에서 모양이 달라져 1칸만 일치', draw: () => pair(0, 0, true) },
+      { title: '입력 두 번째 음부터 맞추면 7칸 모두 일치', draw: () => pair(1, 0, true) }
+    ] },
+    { phase: '검색', label: '전체 반복', title: `시작 위치를 바꿔 가며 같은 비교를 ${r * total}번 반복`, frames: [
+      { draw: () => matrix(false) },
+      { title: '네모 하나가 비교 한 번의 결과, 진할수록 길게 일치', draw: () => matrix(true) }
+    ] },
+    resultStep(M),
+    costStep('linear', '곡 수가 10배 늘면 검색 시간도 10배 증가', 'ms')
+  ]
+});
+}
+</script>
+</body>
+</html>

@@ -130,11 +130,11 @@ function changeStep(M) {
   };
   const W = X + 7 * CW + PX;
   return {
-    phase: '구축', label: '변화 기호', title: '음 대신 앞 음과의 변화를 적어요',
+    phase: '구축', label: '변화 기호', title: '음 높이 대신 앞 음과의 변화를 기호로 기록',
     frames: [
-      { title: '원곡 3곡이 있어요', draw: () => ({ W, H: top(3) - 30, items: rows('contour') }) },
+      { title: '저장할 원곡 3곡', draw: () => ({ W, H: top(3) - 30, items: rows('contour') }) },
       { draw: () => ({ W, H: top(3) - 10, items: rows('both') }) },
-      { title: '키가 달라도 같은 노래면 기호가 같아요', draw: () => ({ W, H: PY + 3 * 52, items: rows('tiles') }) }
+      { title: '키가 달라도 같은 노래는 같은 기호', draw: () => ({ W, H: PY + 3 * 52, items: rows('tiles') }) }
     ]
   };
 }
@@ -151,17 +151,17 @@ function resultStep(M) {
   items.push({ id: 'lab-Q', x: PX, y: qY + 6, html: labHTML(M.query) });
   items.push({ id: 'ct-Q', x: X, y: qY, html: contourHTML(M.query, { on: j => [...qi].some(i => j >= i && j < i + M.L), dim: j => ![...qi].some(i => j >= i && j < i + M.L) }) });
   return {
-    phase: '결과', label: '결과', title: `가장 길게 같은 곳은 ${M.L}칸, ${M.names.length}곡이에요`,
+    phase: '결과', label: '결과', title: `가장 긴 일치 ${M.L}칸, 해당 곡 ${M.names.length}곡`,
     frames: [{ draw: () => ({ W, H: qY + 52, items }) }]
   };
 }
-// 데이터가 늘 때 (실험 결과 막대)
+// 데이터 증가 (실험 결과 막대)
 function costStep(key, title, unit) {
   const rows = MEASURED[key], max = Math.max(...rows.map(r => r[1]));
   const fmt = v => unit === 'ms' ? (v / 1000 >= 100 ? Math.round(v / 1000) : (v / 1000).toFixed(1)) + 'ms' : v.toFixed(1) + 'µs';
-  const html = `<div class="cap">실험에서 잰 검색 시간 (입력 16칸)</div><div style="height:16px"></div><div class="bars">${rows.map(([k, v]) =>
+  const html = `<div class="cap">실험 측정 검색 시간 (입력 16칸)</div><div style="height:16px"></div><div class="bars">${rows.map(([k, v]) =>
     `<span class="k">${k}</span><span class="tr"><i style="width:${v / max * 100}%"></i></span><span class="v">${fmt(v)}</span>`).join('')}</div>`;
-  return { phase: '결과', label: '데이터가 늘면', title, frames: [{ draw: () => ({ W: 608, H: 200, items: [{ id: 'cost', x: PX, y: PY, html }] }) }] };
+  return { phase: '결과', label: '데이터 증가', title, frames: [{ draw: () => ({ W: 608, H: 200, items: [{ id: 'cost', x: PX, y: PY, html }] }) }] };
 }
 
 // ---------- 단계 엔진 ----------
@@ -232,5 +232,5 @@ function startPage(cfg) {
   render();
 }
 
-Object.assign(window, { CW, RH, LBL, PX, PY, START_NOTE, plen, letter, common, less, rawMatch, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, startPage });
+Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, plen, letter, common, less, rawMatch, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, startPage });
 }
