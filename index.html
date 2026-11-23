@@ -14,108 +14,120 @@
 <aside class="side">
   <p class="brand">최장 멜로디 검색</p>
   <nav class="tabs" aria-label="페이지"><a href="index.html" aria-current="page">문제 정의</a><a href="linear.html">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html">체이닝 해시</a></nav>
-  <nav class="steps" id="steps" aria-label="단계"></nav>
+  <nav class="steps" aria-label="목차"><div class="grp"><span class="ph">문제 정의</span><div class="pills" id="toc">
+    <a href="#problem">문제</a><a href="#input">입력</a><a href="#output">출력</a><a href="#limit">제한</a><a href="#example">예제</a>
+  </div></div></nav>
 </aside>
 <div class="content">
-<div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
-<main class="main"><section class="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div></section></main>
-<footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
+<main class="doc">
+  <h1>최장 멜로디 검색</h1>
+
+  <section id="problem">
+    <h2>문제</h2>
+    <p>원곡 멜로디 데이터와 입력 멜로디 하나가 주어짐. 입력의 연속 구간과 원곡의 연속 구간이 같은 멜로디인 경우 중 가장 긴 길이, 그리고 그 길이로 일치하는 곡을 모두 구하는 문제.</p>
+    <p>길이가 같은 두 구간은 아래 세 조건을 모두 만족하면 같은 멜로디.</p>
+    <ol>
+      <li>같은 위치끼리 음과 쉼의 종류가 같음.</li>
+      <li>같은 위치의 음끼리 높이 차이가 구간 전체에서 일정함. 키 변경 허용.</li>
+      <li>같은 위치끼리 길이 비율이 구간 전체에서 일정함. 빠르기 변경 허용.</li>
+    </ol>
+    <p>구간 길이는 음과 쉼의 개수. 쉼도 한 칸.</p>
+  </section>
+
+  <section id="input">
+    <h2>입력</h2>
+    <p>원곡 데이터는 파일에서 읽음. 파일은 블록의 반복이고, 블록마다 첫 줄에 곡명, 둘째 줄에 항목 수 <code>n</code>, 다음 <code>n</code>줄에 음 높이 <code>p</code>와 길이 <code>d</code>.</p>
+    <p>사용자 입력은 첫 줄에 항목 수 <code>r</code>, 다음 <code>r</code>줄에 음 높이 <code>p</code>와 길이 <code>d</code>. <code>p</code>가 -1이면 쉼.</p>
+    <p>서로 다른 블록은 이어 붙이지 않음. 곡명이 같은 블록은 같은 곡으로 처리.</p>
+  </section>
+
+  <section id="output">
+    <h2>출력</h2>
+    <p>첫째 줄에 <code>최대 일치 길이: L</code>, 둘째 줄에 <code>일치한 곡 (k곡)</code>, 다음 <code>k</code>줄에 길이 <code>L</code>로 일치하는 곡명을 중복 없이 사전 순으로 출력. 실행 시간 줄은 생략.</p>
+  </section>
+
+  <section id="limit">
+    <h2>제한</h2>
+    <ul>
+      <li>1 ≤ <code>r</code> ≤ 32</li>
+      <li><code>p</code> = -1 또는 0 ≤ <code>p</code> ≤ 127 (MIDI 음 높이)</li>
+      <li><code>d</code>는 양의 정수. 최댓값 4,294,967,557로 32비트 범위 초과, 64비트 정수 필요</li>
+      <li>블록 길이 <code>n</code> ≤ 7,425</li>
+      <li>전체 데이터: 블록 310,265개, 항목 30,477,226개 (Lakh MIDI 단선율 구간)</li>
+    </ul>
+  </section>
+
+  <section id="example">
+    <h2>예제</h2>
+    <h3>예제 원곡 데이터</h3>
+    <div class="ex">
+<pre>반짝반짝 작은 별
+7
+60 2
+60 2
+67 2
+67 2
+69 2
+69 2
+67 4</pre>
+<pre>떴다 떴다 비행기
+7
+64 3
+62 1
+60 2
+62 2
+64 2
+64 2
+64 4</pre>
+<pre>ABC 노래
+7
+65 2
+65 2
+72 2
+72 2
+74 2
+74 2
+72 4</pre>
+    </div>
+    <div class="pair">
+      <div><h3>예제 입력</h3>
+<pre>8
+62 4
+67 4
+67 4
+74 4
+74 4
+76 4
+76 4
+74 8</pre></div>
+      <div><h3>예제 출력</h3>
+<pre>최대 일치 길이: 7
+일치한 곡 (2곡)
+ABC 노래
+반짝반짝 작은 별</pre></div>
+    </div>
+    <h3>힌트</h3>
+    <p>입력의 2~8번째 음은 반짝반짝 작은 별 전체를 7만큼 높이고 길이를 2배로 늘린 멜로디. ABC 노래는 반짝반짝 작은 별을 5만큼 높인 멜로디라 함께 일치.</p>
+  </section>
+
+  <div class="go"><a class="btn pri" href="linear.html">첫 풀이: 순차 배열</a></div>
+</main>
 </div>
 </div>
-<script src="common.js"></script>
 <script>
 {
-const M = buildModel(), { songs, query: Q, L } = M, [A, B] = songs;
-const W = 600, X = PX + LBL, r = Q.notes.length;
-const nums = (vals, o = {}) => `<div class="nums ${o.cal ? 'cal' : ''}">${vals.map((v, k) =>
-  `<span class="${o.miss === k ? 'miss' : ''}${o.dim && o.dim(k) ? ' dim' : ''}">${esc(v)}</span>`).join('')}</div>`;
-const note = (id, x, y, t) => ({ id, x, y, html: `<span class="note">${esc(t)}</span>` });
-const sign = v => (v > 0 ? '+' : '') + v;
-
-// 1. 상황: 입력 구절 하나, 원곡 여러 곡
-const scene = () => {
-  const it = [{ id: 'lab-Q', x: PX, y: PY + 6, html: labHTML(Q) }, { id: 'ct-Q', x: X, y: PY, html: contourHTML(Q) }];
-  songs.forEach((m, k) => {
-    const y = PY + 100 + k * 60;
-    it.push({ id: 'lab-' + m.tag, x: PX, y: y + 6, html: labHTML(m) }, { id: 'ct-' + m.tag, x: X, y, html: contourHTML(m) });
-  });
-  return { W, H: PY + 100 + 3 * 60, items: it };
-};
-
-// 2. 입력 형식: 음 높이, 길이 쌍
-const format = () => ({ W, H: PY + 140, items: [
-  { id: 'lab-Q', x: PX, y: PY + 6, html: labHTML(Q) },
-  { id: 'ct-Q', x: X, y: PY, html: contourHTML(Q) },
-  note('lb-1', PX, PY + 56, '음 높이'), { id: 'n-1', x: X + 2, y: PY + 52, html: nums(Q.notes.map(n => n.p)) },
-  note('lb-2', PX, PY + 96, '길이'), { id: 'n-2', x: X + 2, y: PY + 92, html: nums(Q.notes.map(n => n.d)) }
-] });
-
-// 3. 데이터 규모 (data/sequences/README.md의 melody_runs.txt 기준)
-const scale = () => ({ W, H: PY + 120, items: [{ id: 'stats', x: PX, y: PY, html:
-  '<div class="stats"><div class="stat"><b>310,265</b><span>연속 구간</span></div><div class="stat"><b>30,477,226</b><span>음과 쉼</span></div></div>' }] });
-
-// 4. 같은 멜로디 판정: 곡 위, 입력 아래(Q1을 곡 첫 칸에 맞춤)
-const yA = PY, yQ = PY + 100, yX = PY + 200, QX = X - CW;
-const same = (song, kind) => () => {
-  const n = song.notes.length, by = kind === 'p' ? x => x.p : x => x.d;
-  const qv = Q.notes.map(by), sv = song.notes.map(by);
-  const it = [
-    { id: 'lab-' + song.tag, x: PX, y: yA + 6, html: labHTML(song) },
-    { id: 'ct-' + song.tag, x: X, y: yA, html: contourHTML(song, { miss: kind === 'break' ? 1 : -1, dim: k => kind === 'break' && k > 1 }) },
-    { id: 'nS', x: X + 2, y: yA + 48, html: nums(kind === 'd' ? sv : song.notes.map(x => x.p), { miss: kind === 'break' ? 1 : -1, dim: k => kind === 'break' && k > 1 }) },
-    { id: 'lab-Q', x: PX, y: yQ + 6, html: labHTML(Q) },
-    { id: 'ct-Q', x: QX, y: yQ, html: contourHTML(Q, { miss: kind === 'break' ? 2 : -1, dim: k => k === 0 || (kind === 'break' && k > 2) }) },
-    { id: 'nQ', x: QX + 2, y: yQ + 48, html: nums(kind === 'd' ? qv : Q.notes.map(x => x.p), { miss: kind === 'break' ? 2 : -1, dim: k => k === 0 || (kind === 'break' && k > 2) }) }
-  ];
-  if (kind === 'p' || kind === 'break') {
-    const diff = song.notes.map((x, k) => sign(Q.notes[k + 1].p - x.p));
-    it.push(note('lb-x', PX, yX + 4, '높이 차이'), { id: 'nX', x: X + 2, y: yX, html: nums(diff, kind === 'break' ? { cal: true, miss: 1, dim: k => k > 1 } : { cal: true }) });
-  }
-  if (kind === 'd') it.push(note('lb-x', PX, yX + 4, '길이 비율'), { id: 'nX', x: X + 2, y: yX, html: nums(song.notes.map((x, k) => '×' + Q.notes[k + 1].d / x.d), { cal: true }) });
-  if (kind === 'break') it.push({ id: 'pill', x: X + n * CW + 20, y: yX - 2, html: '<span class="pill">1칸 일치</span>' });
-  return { W, H: yX + 48, items: it };
-};
-// 조건 3: 쉼 위치 (예시 구절 두 개)
-const mk = (tag, name, arr) => ({ tag, name, notes: arr.map(([p, d]) => ({ p, d })) });
-const R1 = mk('가', '쉼 있는 구절', [[60, 2], [-1, 2], [64, 2], [67, 2]]), R2 = mk('나', '쉼 없는 구절', [[65, 2], [67, 2], [69, 2], [72, 2]]);
-const rest = () => ({ W, H: yQ + 48 + 40, items: [
-  { id: 'lab-R1', x: PX, y: yA + 6, html: labHTML(R1) }, { id: 'ct-R1', x: X, y: yA, html: contourHTML(R1, { miss: 1, dim: k => k > 1 }) },
-  { id: 'nS', x: X + 2, y: yA + 48, html: nums(['음', '쉼', '음', '음'], { miss: 1, dim: k => k > 1 }) },
-  { id: 'lab-R2', x: PX, y: yQ + 6, html: labHTML(R2) }, { id: 'ct-R2', x: X, y: yQ, html: contourHTML(R2, { miss: 1, dim: k => k > 1 }) },
-  { id: 'nQ', x: X + 2, y: yQ + 48, html: nums(['음', '음', '음', '음'], { miss: 1, dim: k => k > 1 }) }
-] });
-
-// 5. 출력
-const output = () => {
-  const d = resultStep(M).frames[0].draw();
-  d.items.push({ id: 'names', x: PX + LBL, y: d.H + 12, html: `<span class="pill blue">${L}칸: ${esc(M.names.join(', '))}</span>` });
-  d.H += 64;
-  return d;
-};
-
-// 6. 해결 방법
-const ways = [['순차 배열', '받은 그대로 두고 모든 위치 비교'], ['정렬 배열', '조각을 정렬해 두고 이진 탐색'], ['체이닝 해시', '조각을 숫자로 바꿔 해당 칸만 확인']];
-const methods = () => ({ W, H: PY + ways.length * 72, items: ways.map(([n, t], k) => ({ id: 'm' + k, x: PX, y: PY + k * 72,
-  html: `<div class="mrow">${chip(k + 1)}<b>${n}</b><span>${t}</span></div>` })) });
-
-startPage({
-  W,
-  next: { href: 'linear.html', label: '첫 방식: 순차 배열' },
-  steps: [
-    { phase: '문제', label: '상황', title: '기억나는 멜로디 일부로 원곡 찾기', frames: [{ draw: scene }] },
-    { phase: '문제', label: '입력 형식', title: '입력: 음 높이와 길이 쌍을 순서대로 나열한 목록', frames: [{ draw: format }] },
-    { phase: '문제', label: '데이터 규모', title: '원곡 데이터: Lakh MIDI에서 뽑은 연속 구간 31만 개', frames: [{ draw: scale }] },
-    { phase: '문제', label: '같은 멜로디', title: '같은 멜로디 판정 기준 3가지', frames: [
-      { title: '반짝반짝 작은 별과 입력 비교, 키와 빠르기만 다름', draw: same(A, 'p0') },
-      { title: '조건 1: 모든 칸의 음 높이 차이가 같음, 키가 달라도 같은 멜로디', draw: same(A, 'p') },
-      { title: '조건 2: 모든 칸의 길이 비율이 같음, 빠르기가 달라도 같은 멜로디', draw: same(A, 'd') },
-      { title: '조건 3: 같은 칸끼리 음과 쉼 종류도 같음, 쉼도 한 칸', draw: rest },
-      { title: '조건이 한 칸이라도 깨지면 그 칸에서 일치 끝', draw: same(B, 'break') }
-    ] },
-    { phase: '문제', label: '출력', title: `출력: 가장 긴 일치 길이(${L}칸)와 해당 곡 이름 전체`, frames: [{ draw: output }] },
-    { phase: '방법', label: '해결 방법', title: '같은 문제를 자료구조 3가지로 구현해 검색 시간 비교', frames: [{ draw: methods }] }
-  ]
-});
+  // 읽는 중인 절을 왼쪽 목차에 표시
+  const links = [...document.querySelectorAll('#toc a')];
+  const mark = id => links.forEach(a => a.classList.toggle('on', a.hash === '#' + id));
+  const secs = [...document.querySelectorAll('.doc section')];
+  const update = () => {
+    let cur = secs[0];
+    for (const sec of secs) if (sec.getBoundingClientRect().top < innerHeight * .35) cur = sec;
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) cur = secs[secs.length - 1];
+    mark(cur.id);
+  };
+  addEventListener('scroll', update, { passive: true });
+  update();
 }
 </script>
 </body>

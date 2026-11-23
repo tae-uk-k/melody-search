@@ -159,20 +159,29 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .nl span.old{background:var(--blue-weak);color:var(--blue-ink)}
 .nl span.out{opacity:.3}
 
-/* 문제 정의 페이지 */
-.nums{display:flex}
-.nums span{flex:none;width:32px;height:32px;margin-right:4px;border-radius:9px;display:grid;place-items:center;font-size:15px;font-weight:700;color:var(--sub);transition:background .3s,color .3s,opacity .3s,box-shadow .3s}
-.nums.cal span{background:var(--blue-weak);color:var(--blue-ink)}
-.nums span.miss{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--ink)}
-.nums span.dim{opacity:.25}
-.stats{display:flex;gap:12px}
-.stat{width:250px;padding:20px 22px;border-radius:18px;background:var(--fill)}
-.stat b{display:block;font-size:32px;font-weight:700;letter-spacing:-.02em}
-.stat span{font-size:16px;font-weight:600;color:var(--sub)}
-.mrow{display:flex;align-items:center;gap:14px;width:560px;height:60px;padding:0 18px;border-radius:16px;background:var(--fill)}
-.mrow b{width:110px;font-size:18px;font-weight:700}
-.mrow span:last-child{font-size:16px;font-weight:600;color:var(--sub)}
-
-@media(max-width:600px){.tabs a{font-size:14px}.btn{height:52px;font-size:16px}.card{border-radius:20px;padding:8px}}
+/* 문제 정의 페이지 (글) */
+.pills a{display:inline-flex;align-items:center;height:34px;border-radius:17px;padding:0 13px;background:var(--card);color:var(--mute);font-size:14px;font-weight:600}
+.pills a.on{background:var(--ink);color:var(--card)}
+.doc{max-width:780px;margin:0 auto;padding:28px max(3vw,16px) 64px}
+.doc h1{margin:0 0 20px;font-size:clamp(26px,3.4vw,32px);font-weight:700;letter-spacing:-.02em}
+.doc section{margin-bottom:12px;padding:24px 26px;border-radius:20px;background:var(--card);scroll-margin-top:16px}
+.doc h2{margin:0 0 12px;font-size:20px;font-weight:700}
+.doc h3{margin:18px 0 8px;font-size:15px;font-weight:700;color:var(--sub)}
+.doc section h2+h3{margin-top:0}
+.doc p,.doc li{margin:0 0 8px;font-size:16px;line-height:1.75}
+.doc p:last-child{margin-bottom:0}
+.doc ol,.doc ul{margin:0 0 10px;padding-left:22px}
+.doc code{padding:1px 6px;border-radius:6px;background:var(--fill);font:600 15px ui-monospace,Consolas,monospace}
+.doc pre{margin:0;padding:14px 16px;white-space:pre-wrap;border-radius:12px;background:var(--fill);font:15px/1.6 ui-monospace,Consolas,"Noto Sans KR",monospace;overflow-x:auto}
+.ex{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.go{display:flex;justify-content:flex-end;margin-top:20px}
+.go .btn{flex:none;display:inline-flex;align-items:center}
+@media(max-width:600px){.ex .pre,.ex pre{padding:12px 10px}.doc section{padding:20px 18px}}
+@media(min-width:960px){
+  .side .pills a{width:100%;height:40px;padding:0 12px;border-radius:10px;background:none;font-size:15px;color:var(--ink)}
+  .side .pills a:hover:not(.on){background:var(--fill)}
+  .side .pills a.on{background:var(--blue-weak);color:var(--blue-ink)}
+}
 @media(min-width:960px){.cta{left:248px}}
 @media(prefers-reduced-motion:reduce){.it,.tl,.prog i,.box,.mx b{transition:none!important}}
