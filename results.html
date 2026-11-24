@@ -21,17 +21,39 @@
 .rt tbody tr.first td,.rt tbody tr.first th{border-top:1px solid var(--line)}
 .rt th.grp{display:table-cell;text-align:left;vertical-align:top;padding-top:11px;font-weight:400}
 .rt th.grp .no{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:8px;border-radius:6px;background:var(--ink);color:var(--card);font-size:12px;font-weight:700;vertical-align:1px}
-.rt th.grp.bonus .no{background:var(--sub)}
 .rt th.grp b{font-size:15px;color:var(--ink)}
 .rt th.grp small{display:block;margin:3px 0 0 30px;color:var(--mute);font-size:12px}
 .rt td.name{text-align:left;font-weight:600;color:var(--ink)}
 .rt .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:1px}
-.rt .dot.lin{background:var(--mute)}.rt .dot.sor{background:var(--ink)}.rt .dot.has{background:var(--blue)}.rt .dot.lst{box-shadow:inset 0 0 0 2px var(--blue)}
+.rt .dot.lin{background:var(--mute)}.rt .dot.sor{background:var(--ink)}.rt .dot.has{background:var(--blue)}
 .rt td.best{background:var(--blue-weak);color:var(--blue-ink);font-weight:700}
 .rt td.na{color:var(--mute)}
 .rt td.grow,.rt td.ratio{color:var(--sub);font-weight:600}
 .key{margin-top:14px!important;font-size:14px!important;color:var(--sub)}
 .key span{display:inline-block;padding:0 8px;margin-right:4px;border-radius:5px;background:var(--blue-weak);color:var(--blue-ink);font-weight:700}
+.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.doc figure{margin:0}
+.doc figure svg{display:block;width:100%;height:auto}
+.leg{display:flex;gap:20px;flex-wrap:wrap;margin:0 0 10px;font-size:14px;font-weight:600;color:var(--sub)}
+.leg span{display:inline-flex;align-items:center;gap:7px}
+.leg i{display:inline-block;width:20px;height:3px;border-radius:2px}
+.leg i.box{width:14px;height:14px;border-radius:3px}
+.leg i.box.py{opacity:.35}
+.leg .lin{background:var(--mute)}.leg .sor{background:var(--ink)}.leg .has{background:var(--blue)}
+.leg .plain{background:var(--sub)}
+svg .ax{font:500 12px "IBM Plex Sans KR",sans-serif;fill:var(--mute)}
+svg .ttl{font:700 14px "IBM Plex Sans KR",sans-serif;fill:var(--ink)}
+svg .val{font:600 11px "IBM Plex Sans KR",sans-serif;fill:var(--sub)}
+svg .grp{font:700 13px "IBM Plex Sans KR",sans-serif;fill:var(--ink)}
+svg .grid{stroke:var(--line);stroke-width:1}
+svg .base{stroke:var(--mute);stroke-width:1}
+svg .ln{fill:none;stroke-width:2.2;stroke-linejoin:round}
+svg .ln.lin{stroke:var(--mute)}svg .ln.sor{stroke:var(--ink)}svg .ln.has{stroke:var(--blue)}
+svg .pt{stroke:var(--card);stroke-width:1.5}
+svg .pt.lin,svg .bar.lin{fill:var(--mute)}svg .pt.sor,svg .bar.sor{fill:var(--ink)}svg .pt.has,svg .bar.has{fill:var(--blue)}
+svg .bar.py{fill-opacity:.35}
+svg .hit{fill:transparent}
+.doc section h3.g{margin-top:22px}
 </style>
 </head>
 <body>
@@ -49,34 +71,128 @@
 <thead><tr class="top"><th></th><th></th><th class="lang" colspan="5">C++</th><th class="lang" colspan="5">Python</th><th class="lang">Python ÷ C++</th></tr>
 <tr><th class="l">경우</th><th class="l">방식</th><th class="lang">1천</th><th class="">1만</th><th class="">10만</th><th class="">100만</th><th>1천 → 100만</th><th class="lang">1천</th><th class="">1만</th><th class="">10만</th><th class="">100만</th><th>1천 → 100만</th><th class="lang">100만</th></tr></thead>
 <tbody>
-<tr class="first"><th class="grp " rowspan="3"><span class="no">1</span><b>DB에 있는 곡 (수록곡)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class=" lang">8.2µs</td><td class="">96.4µs</td><td class="">891µs</td><td class="">7.9ms</td><td class="grow">×964</td><td class=" lang">1.7ms</td><td class="">21.2ms</td><td class="">211ms</td><td class="">1.91초</td><td class="grow">×1,111</td><td class="ratio">241배</td></tr>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">1</span><b>DB에 있는 곡 (수록곡)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class=" lang">8.2µs</td><td class="">96.4µs</td><td class="">891µs</td><td class="">7.9ms</td><td class="grow">×964</td><td class=" lang">1.7ms</td><td class="">21.2ms</td><td class="">211ms</td><td class="">1.91초</td><td class="grow">×1,111</td><td class="ratio">241배</td></tr>
 <tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class="best lang">273ns</td><td class="best">406ns</td><td class="best">303ns</td><td class="best">538ns</td><td class="grow">×2.0</td><td class="best lang">20.8µs</td><td class="best">29.3µs</td><td class="best">26.2µs</td><td class="">32.7µs</td><td class="grow">×1.6</td><td class="ratio">61배</td></tr>
 <tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">769ns</td><td class="">927ns</td><td class="">644ns</td><td class="">833ns</td><td class="grow">×1.1</td><td class=" lang">30.6µs</td><td class="">35.4µs</td><td class="">29.4µs</td><td class="best">31.4µs</td><td class="grow">×1.0</td><td class="ratio">38배</td></tr>
-<tr class="first"><th class="grp " rowspan="3"><span class="no">2</span><b>음을 바꾼 곡 (변형)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class=" lang">13.6µs</td><td class="">174µs</td><td class="">1.3ms</td><td class="">12.8ms</td><td class="grow">×939</td><td class=" lang">2.7ms</td><td class="">30.6ms</td><td class="">305ms</td><td class="">2.87초</td><td class="grow">×1,055</td><td class="ratio">225배</td></tr>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">2</span><b>음을 바꾼 곡 (변형)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class=" lang">13.6µs</td><td class="">174µs</td><td class="">1.3ms</td><td class="">12.8ms</td><td class="grow">×939</td><td class=" lang">2.7ms</td><td class="">30.6ms</td><td class="">305ms</td><td class="">2.87초</td><td class="grow">×1,055</td><td class="ratio">225배</td></tr>
 <tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class=" lang">1.1µs</td><td class="">1.8µs</td><td class="">1.8µs</td><td class="">3.3µs</td><td class="grow">×2.9</td><td class=" lang">98.8µs</td><td class="">117µs</td><td class="">153µs</td><td class="">194µs</td><td class="grow">×2.0</td><td class="ratio">60배</td></tr>
 <tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class="best lang">925ns</td><td class="best">1.0µs</td><td class="best">768ns</td><td class="best">1.0µs</td><td class="grow">×1.1</td><td class="best lang">33.7µs</td><td class="best">36.4µs</td><td class="best">32.2µs</td><td class="best">33.5µs</td><td class="grow">×1.0</td><td class="ratio">32배</td></tr>
-<tr class="first"><th class="grp " rowspan="3"><span class="no">3</span><b>DB에 없는 곡 (미수록곡)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="best lang">16.9µs</td><td class="">236µs</td><td class="">1.5ms</td><td class="">14.3ms</td><td class="grow">×845</td><td class=" lang">3.7ms</td><td class="">38.2ms</td><td class="">372ms</td><td class="">3.51초</td><td class="grow">×958</td><td class="ratio">246배</td></tr>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">3</span><b>DB에 없는 곡 (미수록곡)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="best lang">16.9µs</td><td class="">236µs</td><td class="">1.5ms</td><td class="">14.3ms</td><td class="grow">×845</td><td class=" lang">3.7ms</td><td class="">38.2ms</td><td class="">372ms</td><td class="">3.51초</td><td class="grow">×958</td><td class="ratio">246배</td></tr>
 <tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class=" lang">54.8µs</td><td class="">6.7µs</td><td class="">12.0µs</td><td class="">39.5µs</td><td class="grow">×0.7</td><td class=" lang">1.3ms</td><td class="">184µs</td><td class="">402µs</td><td class="">627µs</td><td class="grow">×0.5</td><td class="ratio">16배</td></tr>
 <tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">41.8µs</td><td class="best">5.3µs</td><td class="best">10.5µs</td><td class="best">28.5µs</td><td class="grow">×0.7</td><td class="best lang">736µs</td><td class="best">62.6µs</td><td class="best">121µs</td><td class="best">262µs</td><td class="grow">×0.4</td><td class="ratio">9.2배</td></tr>
-<tr class="first"><th class="grp " rowspan="3"><span class="no">4</span><b>색인 만들기</b><small>구축 시간 · 검색 전 한 번</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">4</span><b>색인 만들기</b><small>구축 시간 · 검색 전 한 번</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
 <tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class="best lang">125µs</td><td class="best">1.7ms</td><td class="best">16.3ms</td><td class="best">226ms</td><td class="grow">×1,808</td><td class="best lang">6.0ms</td><td class="best">80.0ms</td><td class="best">1.48초</td><td class="best">16.50초</td><td class="grow">×2,749</td><td class="ratio">73배</td></tr>
 <tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">485µs</td><td class="">6.7ms</td><td class="">83.4ms</td><td class="">1.41초</td><td class="grow">×2,915</td><td class=" lang">15.4ms</td><td class="">147ms</td><td class="">2.14초</td><td class="">21.21초</td><td class="grow">×1,377</td><td class="ratio">15배</td></tr>
-<tr class="first"><th class="grp " rowspan="3"><span class="no">5</span><b>색인 크기</b><small>메모리 · C++ 힙 / Python getsizeof</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">5</span><b>색인 크기</b><small>메모리 · C++ 힙 / Python getsizeof</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
 <tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class="best lang">4KB</td><td class="best">40KB</td><td class="best">401KB</td><td class="best">4.0MB</td><td class="grow">×1,000</td><td class="best lang">37KB</td><td class="best">364KB</td><td class="best">3.7MB</td><td class="best">36.3MB</td><td class="grow">×992</td><td class="ratio">9.1배</td></tr>
 <tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">343KB</td><td class="">3.3MB</td><td class="">32.9MB</td><td class="">327MB</td><td class="grow">×953</td><td class=" lang">350KB</td><td class="">3.3MB</td><td class="">32.8MB</td><td class="">327MB</td><td class="grow">×934</td><td class="ratio">1.0배</td></tr>
-<tr class="first"><th class="grp bonus" rowspan="2"><span class="no">6</span><b>해시 칸: 배열 대 연결 리스트 · 메모리</b><small>가산점 · C++ 힙 / Python getsizeof</small></th><td class="name"><i class="dot has"></i>배열 칸</td><td class="best lang">343KB</td><td class="best">3.3MB</td><td class="best">32.9MB</td><td class="best">327MB</td><td class="grow">×953</td><td class="best lang">350KB</td><td class="best">3.3MB</td><td class="best">32.8MB</td><td class="best">327MB</td><td class="grow">×934</td><td class="ratio">1.0배</td></tr>
-<tr class=""><td class="name"><i class="dot lst"></i>연결 리스트 칸</td><td class=" lang">911KB</td><td class="">8.8MB</td><td class="">87.5MB</td><td class="">873MB</td><td class="grow">×958</td><td class=" lang">2.6MB</td><td class="">25.4MB</td><td class="">251MB</td><td class="">2.51GB</td><td class="grow">×958</td><td class="ratio">2.9배</td></tr>
-<tr class="first"><th class="grp bonus" rowspan="2"><span class="no">7</span><b>해시 칸: 배열 대 연결 리스트 · 할당 횟수</b><small>가산점 · C++ new 호출</small></th><td class="name"><i class="dot has"></i>배열 칸</td><td class="best lang">99회</td><td class="best">99회</td><td class="best">99회</td><td class="best">99회</td><td class="grow">×1.0</td><td class="na lang">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
-<tr class=""><td class="name"><i class="dot lst"></i>연결 리스트 칸</td><td class=" lang">3만 회</td><td class="">28만 회</td><td class="">273만 회</td><td class="">2,727만 회</td><td class="grow">×958</td><td class="na lang">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
-<tr class="first"><th class="grp bonus" rowspan="2"><span class="no">8</span><b>해시 칸: 배열 대 연결 리스트 · 해제 시간</b><small>가산점 · 색인 지우기</small></th><td class="name"><i class="dot has"></i>배열 칸</td><td class="best lang">9.8µs</td><td class="best">15.3µs</td><td class="best">1.1ms</td><td class="best">7.3ms</td><td class="grow">×752</td><td class="na lang">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
-<tr class=""><td class="name"><i class="dot lst"></i>연결 리스트 칸</td><td class=" lang">554µs</td><td class="">8.5ms</td><td class="">600ms</td><td class="">8.03초</td><td class="grow">×14,492</td><td class="na lang">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
-<tr class="first"><th class="grp bonus" rowspan="2"><span class="no">9</span><b>해시 칸: 배열 대 연결 리스트 · 검색</b><small>가산점 · DB에 있는 곡, 질의 1개</small></th><td class="name"><i class="dot has"></i>배열 칸</td><td class=" lang">769ns</td><td class="">927ns</td><td class="best">644ns</td><td class="best">833ns</td><td class="grow">×1.1</td><td class="na lang">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
-<tr class=""><td class="name"><i class="dot lst"></i>연결 리스트 칸</td><td class="best lang">626ns</td><td class="best">705ns</td><td class="">746ns</td><td class="">847ns</td><td class="grow">×1.4</td><td class="na lang">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
 </tbody></table>
-    <p class="key"><span>파란 칸</span> 같은 경우·같은 언어·같은 열에서 가장 좋은 값(가장 빠르거나 가장 작음). 1천 → 100만: 데이터가 1,000배일 때 늘어난 배수. 순차 배열은 색인을 만들지 않아 구축·메모리 없음. 7~9번 Python은 측정하지 않음 (메모리만 비교)</p>
+    <p class="key"><span>파란 칸</span> 같은 경우·같은 언어·같은 열에서 가장 좋은 값(가장 빠르거나 가장 작음). 1천 → 100만: 데이터가 1,000배일 때 늘어난 배수. 순차 배열은 색인을 만들지 않아 구축·메모리 없음</p>
+  </section>
+
+  <section id="g-size">
+    <h2>데이터 크기별 검색 시간</h2>
+    <p class="leg"><span><i class="lin"></i>순차 배열</span><span><i class="sor"></i>정렬 배열</span><span><i class="has"></i>체이닝 해시</span><span style="color:var(--mute);font-weight:500">세로축은 10배씩 커지는 로그 눈금</span></p>
+    <h3>DB에 있는 곡 (수록곡)</h3>
+    <div class="charts"><figure id="c-in-cpp"></figure><figure id="c-in-py"></figure></div>
+    <ul>
+      <li>데이터가 1,000배 늘 때 순차 배열만 그만큼 느려짐 (C++ 964배, Python 1,111배). 데이터가 클수록 색인이 필요.</li>
+      <li>정렬 배열·해시는 100만 항목에서도 거의 그대로. C++는 정렬 배열이 가장 빠르고(0.54µs), Python은 둘이 비슷(약 30µs).</li>
+    </ul>
+    <h3 class="g">DB에 없는 곡 (미수록곡)</h3>
+    <div class="charts"><figure id="c-out-cpp"></figure><figure id="c-out-py"></figure></div>
+    <ul>
+      <li>정렬 배열·해시는 1천~5천 항목에서 오히려 느리고 1만 항목에서 가장 빠름. 작은 데이터는 짧게 겹치는 후보가 많아 확인할 곡이 많음.</li>
+      <li>해시가 정렬 배열보다 조금 빠름. C++는 2천 항목까지 순차 배열이 가장 빠름, 데이터가 작으면 색인의 이득이 없음.</li>
+    </ul>
+  </section>
+
+  <section id="g-type">
+    <h2>입력 유형별 검색 시간 (100만 항목)</h2>
+    <p class="leg"><span><i class="box lin"></i>순차 배열</span><span><i class="box sor"></i>정렬 배열</span><span><i class="box has"></i>체이닝 해시</span><span><i class="box plain"></i>C++</span><span><i class="box plain py"></i>Python</span><span style="color:var(--mute);font-weight:500">로그 눈금</span></p>
+    <figure id="c-type"></figure>
+    <ul>
+      <li>DB에 있는 곡은 C++에서 정렬 배열이 가장 빠르고, 변형·없는 곡은 C++·Python 모두 해시가 빠름. 입력 종류에 따라 더 빠른 쪽이 바뀜.</li>
+      <li>없는 곡이 가장 느림 (C++ 정렬 배열 39.5µs, 해시 28.5µs). Python은 C++보다 순차 약 240배, 정렬 16~61배, 해시 9~38배 느림.</li>
+    </ul>
+  </section>
+
+  <section id="g-build">
+    <h2>구축 비용 (100만 항목)</h2>
+    <p class="leg"><span><i class="box sor"></i>정렬 배열</span><span><i class="box has"></i>체이닝 해시</span><span><i class="box plain"></i>C++</span><span><i class="box plain py"></i>Python</span><span style="color:var(--mute);font-weight:500">로그 눈금</span></p>
+    <figure id="c-build"></figure>
+    <ul>
+      <li>해시는 정렬 배열보다 구축이 오래 걸림 (C++ 6.3배, Python 1.3배). 순차 배열은 구축 없음.</li>
+      <li>해시가 구축에 더 쓴 1.2초(C++)를 검색으로 되찾으려면 없는 곡 기준 약 11만 번 검색 필요. 검색이 적으면 정렬 배열이 유리.</li>
+    </ul>
   </section>
 </main>
 </div>
 </div>
+
+<script>
+{
+const D = {"cpp": {"search": {"in": {"linear": [8.21, 24.3, 54.5, 96.4, 223.0, 491.0, 891.0, 1624.0, 3837.0, 7915.0], "sorted": [0.273, 0.246, 0.291, 0.406, 0.372, 0.42, 0.303, 0.371, 0.395, 0.538], "hash": [0.769, 0.764, 1.03, 0.927, 0.865, 0.942, 0.644, 0.702, 0.793, 0.833]}, "var": {"linear": [13.6, 28.2, 69.3, 174.0, 318.0, 724.0, 1304.0, 2417.0, 6522.0, 12769.0], "sorted": [1.12, 1.27, 1.35, 1.79, 1.88, 2.35, 1.8, 2.01, 2.49, 3.26], "hash": [0.925, 0.788, 1.13, 1.0, 0.993, 1.17, 0.768, 0.888, 1.0, 1.04]}, "out": {"linear": [16.9, 34.7, 84.9, 236.0, 389.0, 830.0, 1479.0, 2854.0, 7947.0, 14282.0], "sorted": [54.8, 47.2, 42.5, 6.72, 11.2, 15.0, 12.0, 14.5, 28.7, 39.5], "hash": [41.8, 36.0, 31.3, 5.29, 8.79, 10.6, 10.5, 11.1, 21.9, 28.5]}}, "build": {"sorted": [0.125, 0.263, 0.795, 1.66, 3.84, 10.5, 16.3, 36.5, 99.5, 226.0], "hash": [0.485, 0.92, 3.33, 6.66, 14.5, 52.5, 83.4, 205.0, 709.0, 1414.0]}}, "py": {"search": {"in": {"linear": [1715.0, 4107.0, 12405.0, 21188.0, 43399.0, 97939.0, 210855.0, 386468.0, 902182.0, 1905577.0], "sorted": [20.8, 19.1, 21.6, 29.3, 23.7, 28.5, 26.2, 27.7, 29.8, 32.7], "hash": [30.6, 28.5, 32.0, 35.4, 29.9, 34.3, 29.4, 30.2, 28.6, 31.4]}, "var": {"linear": [2717.0, 5807.0, 15824.0, 30628.0, 61427.0, 149886.0, 304850.0, 567235.0, 1418444.0, 2867465.0], "sorted": [98.8, 101.0, 104.0, 117.0, 117.0, 145.0, 153.0, 164.0, 252.0, 194.0], "hash": [33.7, 32.2, 33.1, 36.4, 32.9, 35.9, 32.2, 35.5, 33.5, 33.5]}, "out": {"linear": [3666.0, 7454.0, 18677.0, 38187.0, 76315.0, 182994.0, 371561.0, 694343.0, 1708575.0, 3510526.0], "sorted": [1288.0, 1111.0, 570.0, 184.0, 258.0, 331.0, 402.0, 361.0, 668.0, 627.0], "hash": [736.0, 680.0, 318.0, 62.6, 105.0, 114.0, 121.0, 122.0, 226.0, 262.0]}}, "build": {"sorted": [6.0, 10.9, 32.8, 80.0, 199.0, 547.0, 1477.0, 2629.0, 10588.0, 16495.0], "hash": [15.4, 32.1, 73.9, 147.0, 302.0, 924.0, 2142.0, 3840.0, 10985.0, 21207.0]}}};
+const NS = [1e3, 2e3, 5e3, 1e4, 2e4, 5e4, 1e5, 2e5, 5e5, 1e6];
+const NL = ['1천', '2천', '5천', '1만', '2만', '5만', '10만', '20만', '50만', '100만'];
+const M = ['linear', 'sorted', 'hash'], TONE = { linear: 'lin', sorted: 'sor', hash: 'has' };
+const NAME = { linear: '순차 배열', sorted: '정렬 배열', hash: '체이닝 해시' }, LANG = { cpp: 'C++', py: 'Python' };
+const p3 = v => +v.toPrecision(3);
+const tfmt = us => us >= 1e6 ? p3(us / 1e6) + '초' : us >= 1e3 ? p3(us / 1e3) + 'ms' : us >= 1 ? p3(us) + 'µs' : p3(us * 1e3) + 'ns';
+const tick = us => us >= 1e6 ? us / 1e6 + '초' : us >= 1e3 ? us / 1e3 + 'ms' : us >= 1 ? us + 'µs' : Math.round(us * 1e3) + 'ns';
+const range = vals => [Math.floor(Math.log10(Math.min(...vals))), Math.ceil(Math.log10(Math.max(...vals)))];
+const yAxis = (s, y, lo, hi, L, R, W) => { for (let e = lo; e <= hi; e++) { const v = 10 ** e, yy = y(v); s.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}"/><text class="ax" x="${L - 8}" y="${yy + 4}" text-anchor="end">${tick(v)}</text>`); } };
+
+// 데이터 크기별 꺾은선: 가로 N(로그), 세로 시간(로그). lo·hi = 세로축 10의 지수(µs 기준)
+function line(id, lang, type, lo, hi) {
+  const W = 520, H = 300, L = 58, R = 18, T = 36, B = 44, s = [];
+  const x = n => L + (Math.log10(n) - 3) / 3 * (W - L - R), y = v => T + (hi - Math.log10(v)) / (hi - lo) * (H - T - B);
+  s.push(`<text class="ttl" x="${L}" y="20">${LANG[lang]}</text>`);
+  yAxis(s, y, lo, hi, L, R, W);
+  s.push(`<line class="base" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`);
+  [[1e3, '1천'], [1e4, '1만'], [1e5, '10만'], [1e6, '100만']].forEach(([n, t]) => s.push(`<text class="ax" x="${x(n)}" y="${H - B + 18}" text-anchor="middle">${t}</text>`));
+  s.push(`<text class="ax" x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle">데이터 수 N (항목)</text>`);
+  for (const m of M) {
+    const v = D[lang].search[type][m];
+    s.push(`<polyline class="ln ${TONE[m]}" points="${v.map((u, i) => `${x(NS[i]).toFixed(1)},${y(u).toFixed(1)}`).join(' ')}"/>`);
+    v.forEach((u, i) => s.push(`<g><circle class="pt ${TONE[m]}" cx="${x(NS[i]).toFixed(1)}" cy="${y(u).toFixed(1)}" r="3.6"/><circle class="hit" cx="${x(NS[i]).toFixed(1)}" cy="${y(u).toFixed(1)}" r="10"><title>${LANG[lang]} · ${NAME[m]} · ${NL[i]} 항목 · ${tfmt(u)}</title></circle></g>`));
+  }
+  document.getElementById(id).innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${LANG[lang]} 데이터 크기별 검색 시간">${s.join('')}</svg>`;
+}
+for (const t of ['in', 'out']) {
+  const [lo, hi] = range(['cpp', 'py'].flatMap(l => M.flatMap(m => D[l].search[t][m])));
+  line(`c-${t}-cpp`, 'cpp', t, lo, hi);
+  line(`c-${t}-py`, 'py', t, lo, hi);
+}
+
+// 막대: groups = [[묶음 이름, [[막대 이름, 방식, 언어, 값(µs)], ...]], ...]
+function bars(id, groups, label, o = {}) {
+  const BW = o.bw || 24, IN = o.in || 3, MG = 16, GG = o.gg || 56, L = 62, R = 18, T = 24, B = 54, H = 340, PAD = 16;
+  const vals = groups.flatMap(g => g[1].map(b => b[3])), [lo, hi] = range(vals);
+  let W = L + PAD + R + PAD, xs = [];
+  groups.forEach((g, gi) => { const n = g[1].length / 2; xs.push(W - R - PAD); W += n * (2 * BW + IN) + (n - 1) * MG + (gi < groups.length - 1 ? GG : 0); });
+  const y = v => T + (hi - Math.log10(v)) / (hi - lo) * (H - T - B), s = [];
+  yAxis(s, y, lo, hi, L, R, W);
+  groups.forEach((g, gi) => {
+    let x = xs[gi] + (gi ? 0 : 0);
+    const start = x;
+    g[1].forEach((b, k) => {
+      const [nm, m, lang, v] = b, yy = y(v), h = H - B - yy;
+      s.push(`<g><rect class="bar ${TONE[m]} ${lang}" x="${x}" y="${yy.toFixed(1)}" width="${BW}" height="${h.toFixed(1)}" rx="3"/><rect class="hit" x="${x}" y="${T}" width="${BW}" height="${H - B - T}"><title>${LANG[lang]} · ${NAME[m]} · ${tfmt(v)}</title></rect></g>`);
+      if (label) s.push(`<text class="val" x="${x + BW / 2}" y="${yy - 6}" text-anchor="middle">${tfmt(v)}</text>`);
+      x += BW + (k % 2 ? MG : IN);
+    });
+    s.push(`<text class="grp" x="${(start + x - MG) / 2}" y="${H - B + 24}" text-anchor="middle">${g[0]}</text>`);
+  });
+  s.push(`<line class="base" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`);
+  document.getElementById(id).innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" style="width:${W}px;max-width:100%">${s.join('')}</svg>`;
+}
+const last = a => a[a.length - 1];
+bars('c-type', [['수록곡', 'in'], ['변형', 'var'], ['미수록곡', 'out']].map(([g, t]) =>
+  [g, M.flatMap(m => ['cpp', 'py'].map(l => [g, m, l, last(D[l].search[t][m])]))]), true);
+bars('c-build', [['정렬 배열', 'sorted'], ['체이닝 해시', 'hash']].map(([g, m]) =>
+  [g, ['cpp', 'py'].map(l => [g, m, l, last(D[l].build[m]) * 1000])]), true, { bw: 56, in: 6, gg: 120 });
+}
+</script>
 </body>
 </html>
