@@ -249,3 +249,10 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .chg .v.c{background:var(--blue-weak);color:var(--blue-ink);font-weight:600}
 .chg .v.s{background:none;color:var(--mute);font-family:inherit;font-size:13.5px;font-weight:600}
 .chg .ok{grid-column:1/-1;margin:8px 0 0;padding:12px 16px;border-radius:12px;background:var(--blue-weak);color:var(--blue-ink);font-size:15px;font-weight:700}
+.sl{position:relative;height:200px}
+.sl .sr{position:absolute;left:0}
+.sl .sl-q{transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.sl-rec{display:flex;gap:4px}
+.sl-rec span{width:32px;text-align:center;font-size:16px;font-weight:700;color:var(--sub)}
+.sl-rec span.hit{color:var(--blue-ink)}
+@media(prefers-reduced-motion:reduce){.sl .sl-q{transition:none}}
