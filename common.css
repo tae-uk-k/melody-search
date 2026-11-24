@@ -270,3 +270,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .mbtn svg{width:22px;height:22px;fill:currentColor}
 .mbtn.play{color:var(--blue)}
 .mbtn.play svg{width:24px;height:24px}
+/* 해시: 칸 배열 (빈 칸, 끝 칸, 범위 끝) */
+.bk span.zero{color:var(--mute);font-weight:600}
+.bk span.end{border-style:dashed}
+.bk span.nx{border-color:var(--blue);border-style:dashed;color:var(--blue-ink)}
