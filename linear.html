@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=8">
+<link rel="stylesheet" href="common.css?v=9">
 </head>
 <body>
 <div class="app">
@@ -86,7 +86,81 @@ public:
     }
 };
 </script>
-<script src="common.js?v=7"></script>
+<script type="text/plain" id="src-py">
+# raw_match_length()는 main.py의 공통 함수
+# 입력 i번, 곡 j번부터 몇 칸 연속으로 같은 멜로디인지 센다
+def raw_match_length(q, i, m, j, limit):
+    # 첫 칸 쌍의 길이 비율 (약분한 정수 두 개)
+    g = gcd_ll(q.notes[i][1], m.notes[j][1])
+    ratio_q = q.notes[i][1] // g
+    ratio_m = m.notes[j][1] // g
+    has_shift = False  # 높이 차이를 아직 정하지 않음
+    shift = 0
+    k = 0
+    while k < limit and i + k < len(q.notes) and j + k < len(m.notes):
+        a_pitch, a_length = q.notes[i + k]
+        b_pitch, b_length = m.notes[j + k]
+        if (a_pitch == -1) != (b_pitch == -1):  # 음·쉼 종류가 다름
+            break
+        gg = gcd_ll(a_length, b_length)
+        if a_length // gg != ratio_q or b_length // gg != ratio_m:  # 길이 비율이 다름
+            break
+        if a_pitch != -1:
+            if not has_shift:
+                shift = b_pitch - a_pitch  # 첫 음 쌍에서 높이 차이 결정
+                has_shift = True
+            elif b_pitch - a_pitch != shift:  # 높이 차이가 다름
+                break
+        k += 1
+    return k
+
+class LinearArray:
+
+    # 순차 배열은 별도의 색인을 만들지 않음
+    def build(self, blocks):
+        pass
+
+    # 입력 멜로디와 원곡을 비교하여 가장 긴 일치 구간 찾기
+    def find(self, blocks, query):
+
+        r = len(query.notes)
+
+        best = 0          # 전체 최대 일치 길이
+        names = set()     # 최대 길이로 일치한 곡명
+
+        # 원곡의 모든 블록을 하나씩 확인
+        for block in blocks:
+
+            block_best = 0  # 현재 블록의 최대 일치 길이
+
+            # 입력 멜로디의 모든 시작 위치
+            for i in range(r):
+
+                # 원곡 멜로디의 모든 시작 위치
+                for j in range(len(block.notes)):
+
+                    # 두 위치부터 연속으로 일치하는 길이 계산
+                    length = raw_match_length(
+                        query, i, block, j, r
+                    )
+
+                    # 현재 블록에서 가장 긴 길이 저장
+                    if length > block_best:
+                        block_best = length
+
+            # 전체 최대 길이보다 길면 갱신
+            if block_best > best:
+                best = block_best
+                names.clear()
+
+            # 최대 길이가 같으면 곡명 추가
+            if block_best == best and best > 0:
+                names.add(block.name)
+
+        # 최대 일치 길이와 정렬된 곡명 반환
+        return best, sorted(names)
+</script>
+<script src="common.js?v=9"></script>
 <script>
 {
 const M = buildModel(), { songs, query: Q } = M, A = songs[0], r = Q.notes.length;
@@ -160,7 +234,8 @@ startPage({
       { label: '구축', factors: [['0', '미리 할 작업 없음']], ops: [], result: 'O(1)' },
       { label: '검색', factors: [['r', '입력 시작 위치'], ['N', '원곡 시작 위치'], ['r', '비교 한 번 최대 칸']], ops: ['×', '×'], result: 'O(r²·N)' }
     ], ['N = 원곡 전체 음 개수(조각 수), r = 입력 음 개수(최대 32)', '미리 만든 구조가 없어 입력이 올 때마다 원곡의 모든 시작 위치를 처음부터 확인', '시작 위치 쌍 r × N개마다 최대 r칸 비교, 대부분 몇 칸 안에 끝나 실제로는 r × N에 가까움', 'r은 32 이하로 고정이라 원곡이 10배 늘면 비교도 10배, 그래서 O(N)']),
-    codeStep('01_linear_array.cpp')
+    codeStep('01_linear_array.cpp'),
+    codeStep('01_linear_array.py', 'py')
   ]
 });
 }

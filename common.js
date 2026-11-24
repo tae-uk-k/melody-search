@@ -198,16 +198,24 @@ const descHTML = d => {
   return items.length > 1 ? `<ol>${items.map(x => `<li><span>${one(x)}</span></li>`).join('')}</ol>` : `<p>${one(items[0] || '')}</p>`;
 };
 
-// 코드 단계 (각 방식 마지막)
-function codeStep(file) {
-  return { phase: '코드', label: 'C++ 구현', title: `구현 코드: ${file}`,
-    desc: '제출용 C++ 코드에서 주석만 짧게 줄인 것. 데이터 읽기와 공통 자료형은 main.cpp에 있음.', frames: [{ code: file }] };
+// 코드 단계 (각 방식 마지막). lang: 'cpp' 또는 'py'
+const LANG = {
+  cpp: { name: 'C++', src: 'src', com: '//', desc: '제출용 C++ 코드에서 주석만 짧게 줄인 것. 데이터 읽기와 공통 자료형은 main.cpp에 있음.',
+    kw: 'const static struct class public private return for while if else continue break true false new delete using namespace template typename',
+    ty: 'int long bool void char double float auto size_t string vector set map' },
+  py: { name: 'Python', src: 'src-py', com: '#', desc: '제출용 Python 코드. 앞쪽 공통 함수는 main.py에서 가져와 짧은 주석을 붙인 것. 데이터 읽기와 Melody 자료형은 main.py에 있음.',
+    kw: 'def class return for while if elif else continue break True False None in not and or is import from as pass lambda with try except raise',
+    ty: 'int str bool float list dict set tuple' },
+};
+for (const L of Object.values(LANG)) { L.kw = new Set(L.kw.split(' ')); L.ty = new Set(L.ty.split(' ')); }
+function codeStep(file, lang = 'cpp') {
+  const L = LANG[lang];
+  return { phase: '코드', label: `${L.name} 구현`, title: `구현 코드: ${file}`, desc: L.desc, frames: [{ code: file, lang }] };
 }
 // 에디터 모양 코드: 줄 번호 + 문법 색 (키워드, 자료형, 함수, 숫자, 주석)
-const KW = new Set('const static struct class public private return for while if else continue break true false new delete using namespace template typename'.split(' '));
-const TY = new Set('int long bool void char double float auto size_t string vector set map'.split(' '));
-function colorLine(line) {
-  const re = /(\/\/.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(\b\d+\b)|([A-Za-z_]\w*)|([\s\S])/g;
+function colorLine(line, L) {
+  const com = L.com === '#' ? '#.*$' : '\\/\\/.*$';
+  const re = new RegExp(`(${com})|("(?:[^"\\\\]|\\\\.)*"|'(?:[^'\\\\]|\\\\.)*')|(\\b\\d+\\b)|([A-Za-z_]\\w*)|([\\s\\S])`, 'g');
   let out = '', m;
   while ((m = re.exec(line))) {
     const [t, com, str, num, id] = m;
@@ -217,17 +225,17 @@ function colorLine(line) {
     else if (id) {
       const call = /^\s*\(/.test(line.slice(re.lastIndex));
       const caps = /^[A-Z][A-Z_\d]+$/.test(id);
-      const cls = KW.has(id) ? 'k' : TY.has(id) || /^[A-Z][a-z]/.test(id) ? 't' : call ? 'f' : caps ? 'n' : '';
+      const cls = L.kw.has(id) ? 'k' : L.ty.has(id) || /^[A-Z][a-z]/.test(id) ? 't' : call ? 'f' : caps ? 'n' : '';
       out += cls ? `<i class="${cls}">${id}</i>` : id;
     } else out += esc(t);
   }
   return out;
 }
-function editorHTML(file, src) {
-  const lines = src.split('\n');
-  return `<div class="ed-bar"><span class="ed-dots"><i></i><i></i><i></i></span><span class="ed-tab">${esc(file)}</span><button type="button" class="ed-copy">복사</button></div>
-<div class="ed-body">${lines.map((l, k) => `<div class="ed-l"><span class="ed-n">${k + 1}</span><code>${colorLine(l) || ' '}</code></div>`).join('')}</div>
-<div class="ed-status"><span>C++</span><span>${lines.length}줄</span></div>`;
+function editorHTML(file, src, lang) {
+  const L = LANG[lang], lines = src.split('\n');
+  return `<div class="ed-bar"><span class="ed-dots"><i></i><i></i><i></i></span><span class="ed-tab ${lang}">${esc(file)}</span><button type="button" class="ed-copy">복사</button></div>
+<div class="ed-body">${lines.map((l, k) => `<div class="ed-l"><span class="ed-n">${k + 1}</span><code>${colorLine(l, L) || ' '}</code></div>`).join('')}</div>
+<div class="ed-status"><span>${L.name}</span><span>${lines.length}줄</span></div>`;
 }
 
 // ---------- 단계 엔진 ----------
@@ -282,9 +290,9 @@ function startPage(cfg) {
     $('fit').hidden = !!fr.code; $('code').hidden = !fr.code;
     if (fr.code) {
       cur = null;
-      if (!$('code')._done) {
-        const src = $('src').textContent.trim();
-        $('code').innerHTML = editorHTML(fr.code, src); $('code')._done = true;
+      if ($('code')._file !== fr.code) {
+        const src = $(LANG[fr.lang].src).textContent.trim();
+        $('code').innerHTML = editorHTML(fr.code, src, fr.lang); $('code')._file = fr.code;
         $('code').querySelector('.ed-copy').addEventListener('click', e => {
           navigator.clipboard?.writeText(src).then(() => { e.target.textContent = '복사됨'; setTimeout(() => e.target.textContent = '복사', 1500); });
         });

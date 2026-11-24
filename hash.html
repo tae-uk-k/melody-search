@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=8">
+<link rel="stylesheet" href="common.css?v=9">
 </head>
 <body>
 <div class="app">
@@ -160,7 +160,170 @@ public:
     }
 };
 </script>
-<script src="common.js?v=7"></script>
+<script type="text/plain" id="src-py">
+# letter(), raw_match_length()는 main.py의 공통 함수
+MOD = 1000000007
+BASE = 911382323
+MAX_INPUT = 32
+
+class HashTable:
+
+    def __init__(self):
+        # 길이별 해시 테이블
+        self.tables = []
+
+    # 1. 멜로디 조각의 해시값 계산
+    def piece_hashes(self, m, s, max_len):
+
+        hashes = [0] * (max_len + 1)
+        h = 0
+
+        for length in range(1, max_len + 1):
+
+            h = (
+                h * BASE + letter(m, s, length - 1)
+            ) % MOD
+
+            hashes[length] = h
+
+        return hashes
+
+    # 2. 길이 L로 일치하는 조각이 있는지 확인
+    def check(self, blocks, query, query_hashes,
+              L, collect, names):
+
+        r = len(query.notes)
+        table = self.tables[L]
+
+        # 입력의 모든 길이 L 조각 확인
+        for i in range(r - L + 1):
+
+            h = query_hashes[i][L]
+
+            # 해시값으로 저장된 칸 찾기
+            bucket = table[h % len(table)]
+
+            # 같은 칸에 저장된 조각들 확인
+            for entry in bucket:
+
+                entry_hash, b, s = entry
+
+                # 해시값이 다르면 건너뛰기
+                if entry_hash != h:
+                    continue
+
+                # 실제 멜로디가 일치하는지 확인
+                length = raw_match_length(
+                    query, i, blocks[b], s, L
+                )
+
+                if length < L:
+                    continue
+
+                # 일치 여부만 확인할 때
+                if not collect:
+                    return True
+
+                # 일치한 곡명 저장
+                names.add(blocks[b].name)
+
+        return len(names) > 0
+
+    # 3. 해시 테이블 구축
+    def build(self, blocks):
+
+        self.tables = [[] for _ in range(MAX_INPUT + 1)]
+
+        # 길이별로 해시 테이블의 칸 만들기
+        for L in range(1, MAX_INPUT + 1):
+
+            count = 0
+
+            for block in blocks:
+
+                n = len(block.notes)
+
+                if n >= L:
+                    count += n - L + 1
+
+            # 조각이 없어도 최소 1칸 생성
+            size = max(count, 1)
+
+            self.tables[L] = [[] for _ in range(size)]
+
+        # 모든 블록의 모든 시작 위치 확인
+        for b in range(len(blocks)):
+
+            n = len(blocks[b].notes)
+
+            for s in range(n):
+
+                max_len = min(MAX_INPUT, n - s)
+
+                hashes = self.piece_hashes(
+                    blocks[b], s, max_len
+                )
+
+                # 길이 1~32 조각을 해시 테이블에 저장
+                for L in range(1, max_len + 1):
+
+                    entry = (hashes[L], b, s)
+
+                    bucket_index = (
+                        hashes[L] % len(self.tables[L])
+                    )
+
+                    self.tables[L][bucket_index].append(entry)
+
+    # 4. 가장 긴 일치 구간 검색
+    def find(self, blocks, query):
+
+        r = len(query.notes)
+
+        # 입력 조각들의 해시값 계산
+        query_hashes = []
+
+        for i in range(r):
+
+            hashes = self.piece_hashes(
+                query, i, r - i
+            )
+
+            query_hashes.append(hashes)
+
+        # 이진 탐색으로 최대 일치 길이 찾기
+        unused = set()
+
+        low = 1
+        high = r
+        best = 0
+
+        while low <= high:
+
+            mid = (low + high) // 2
+
+            if self.check(
+                blocks, query, query_hashes,
+                mid, False, unused
+            ):
+                best = mid
+                low = mid + 1
+
+            else:
+                high = mid - 1
+
+        # 최대 길이로 일치한 곡명 수집
+        names = set()
+
+        if best > 0:
+            self.check(
+                blocks, query, query_hashes,
+                best, True, names
+            )
+
+        return best, sorted(names)
+</script>
+<script src="common.js?v=9"></script>
 <script>
 {
 const M = buildModel(), { songs, query: Q, L } = M, A = songs[0];
@@ -325,7 +488,8 @@ startPage({
       { label: '구축', factors: [['N', '시작 위치'], ['32', '길이 1~32 해시'], ['2', '두 번 훑기']], ops: ['×', '×'], result: 'O(N)' },
       { label: '검색', factors: [['r²', '입력 조각 해시 계산'], ['log r', '길이 이진 탐색'], ['r', '입력 조각'], ['1', '칸 평균 항목']], ops: ['+', '×', '×'], result: 'O(r²)' }
     ], ['N = 원곡 전체 음 개수(조각 수), r = 입력 음 개수(최대 32)', '구축: 시작 위치마다 길이 1~32 해시를 한 번에 계산하고 두 번 훑어 저장, 항목이 최대 32 × N개라 메모리도 그만큼 사용', '칸 수 = 조각 수라 한 칸에 평균 항목 1개 (적재율 1)', '검색: 길이를 이진 탐색하며 입력 조각마다 칸 하나만 확인, 식에 N이 없어 원곡이 늘어도 시간 거의 일정', '한 칸에 항목이 몰리는 최악의 경우 O(N)까지 가능해서 [[평균]] 상수 시간']),
-    codeStep('03_hash_table.cpp')
+    codeStep('03_hash_table.cpp'),
+    codeStep('03_hash_table.py', 'py')
   ]
 });
 }

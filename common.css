@@ -82,6 +82,7 @@ mark{padding:0;background:none;color:var(--blue-ink);font-weight:700}
 .ed-dots i{width:10px;height:10px;border-radius:50%;background:#3a3f4b}
 .ed-tab{align-self:flex-end;height:34px;padding:0 14px;border-radius:9px 9px 0 0;background:var(--ed-bg);display:flex;align-items:center;color:#e8ebf0;font-size:13px}
 .ed-tab::before{content:"";width:8px;height:8px;margin-right:9px;border-radius:2px;background:var(--ed-k)}
+.ed-tab.py::before{background:var(--ed-f)}
 .ed-copy{margin-left:auto;height:28px;padding:0 12px;border:0;border-radius:8px;background:#262a33;color:#c3c8d1;font:600 13px "IBM Plex Sans KR",sans-serif;cursor:pointer}
 .ed-copy:hover{background:#30353f;color:#fff}
 .ed-body{padding:14px 0 16px}
