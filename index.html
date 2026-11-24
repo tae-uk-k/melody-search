@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=11">
+<link rel="stylesheet" href="common.css?v=12">
 </head>
 <body>
 <div class="app">
@@ -24,25 +24,17 @@
 
   <section id="problem">
     <h2>문제</h2>
-    <p>원곡 멜로디 데이터와 입력 멜로디 하나가 주어짐. 입력과 원곡 사이의 <mark>최장 공통 부분 문자열</mark>의 길이, 그리고 그 길이로 일치하는 곡을 모두 구하는 문제. 단, 키와 빠르기가 달라도 같은 멜로디로 판정.</p>
-    <p>길이가 같은 두 구간은 아래 세 조건을 모두 만족하면 같은 멜로디.</p>
-    <ol>
-      <li>같은 위치끼리 음과 쉼의 종류가 같음.</li>
-      <li>같은 위치의 음끼리 높이 차이가 구간 전체에서 일정함. 키 변경 허용.</li>
-      <li>같은 위치끼리 길이 비율이 구간 전체에서 일정함. 빠르기 변경 허용.</li>
-    </ol>
-    <p>구간 길이는 음과 쉼의 개수. 쉼도 한 칸.</p>
-    <h3>음 높이 대신 변화량으로 비교</h3>
-    <p>음마다 바로 앞 음과의 높이 변화, 길이 비율만 봄. 키를 올리거나 느리게 불러도 변화량은 그대로라 같은 멜로디로 판정.</p>
-    <div class="chg" id="chg" role="img" aria-label="반짝반짝 작은 별과 입력 2~8번째 음의 변화량 비교"></div>
-    <p>정렬 배열과 체이닝 해시는 이 변화량을 번호 하나로 바꿔 미리 저장. 순차 배열은 저장 없이 비교할 때마다 계산.</p>
+    <p>원곡 데이터와 입력 멜로디 하나가 주어짐. 입력과 가장 길게 연속으로 일치하는 구간의 길이 <code>L</code>, 그리고 길이 <code>L</code>로 일치하는 곡을 모두 구함 (<mark>최장 공통 부분 문자열</mark>).</p>
+    <p>키나 빠르기가 달라도 같은 멜로디로 판정. 그래서 음을 그대로 비교하지 않고, 칸마다 앞 칸과의 변화를 번호로 바꿔 저장한 뒤 번호끼리 비교. 쉼도 한 칸.</p>
+    <h3>변화 번호로 저장하는 방법</h3>
+    <div class="chg" id="chg" role="img" aria-label="반짝반짝 작은 별과 입력 2~8번째 음을 변화 번호로 바꾼 표"></div>
   </section>
 
   <section id="input">
     <h2>입력</h2>
-    <p>원곡 데이터는 파일에서 읽음. 파일은 블록의 반복이고, 블록마다 첫 줄에 곡명, 둘째 줄에 항목 수 <code>n</code>, 다음 <code>n</code>줄에 음 높이 <code>p</code>와 길이 <code>d</code>.</p>
-    <p>사용자 입력은 첫 줄에 항목 수 <code>r</code>, 다음 <code>r</code>줄에 음 높이 <code>p</code>와 길이 <code>d</code>. <code>p</code>가 -1이면 쉼.</p>
-    <p>서로 다른 블록은 이어 붙이지 않음. 곡명이 같은 블록은 같은 곡으로 처리.</p>
+    <p>원곡 파일은 블록의 반복. 블록 = 곡명 한 줄, 항목 수 <code>n</code> 한 줄, 다음 <code>n</code>줄에 음 높이 <code>p</code>와 길이 <code>d</code>.</p>
+    <p>사용자 입력은 항목 수 <code>r</code> 한 줄, 다음 <code>r</code>줄에 <code>p d</code>. <code>p</code> = -1이면 쉼.</p>
+    <p>블록끼리는 이어 붙이지 않음. 곡명이 같은 블록은 같은 곡.</p>
   </section>
 
   <section id="output">
@@ -111,7 +103,7 @@ ABC 노래
 반짝반짝 작은 별</pre></div>
     </div>
     <h3>힌트</h3>
-    <p>입력의 2~8번째 음은 반짝반짝 작은 별 전체를 7만큼 높이고 길이를 2배로 늘린 멜로디. ABC 노래는 반짝반짝 작은 별을 5만큼 높인 멜로디라 함께 일치.</p>
+    <p>입력 2~8번째 음 = 반짝반짝 작은 별을 7 높이고 길이 2배. ABC 노래는 반짝반짝 작은 별을 5 높인 곡이라 함께 일치.</p>
   </section>
 
   <div class="go"><a class="btn pri" href="linear.html">첫 풀이: 순차 배열</a></div>
@@ -120,29 +112,31 @@ ABC 노래
 </div>
 <script>
 {
-  // 변화량 그림: 위 = 음 높이(세로)와 길이(막대 너비), 아래 = 앞 음 대비 변화량
+  // 변화 번호 표: 원래 값 (높이, 길이) → 앞 칸과의 변화 → 저장 번호. 같은 변화 = 같은 번호
   const MEL = [
     { name: '반짝반짝 작은 별', tag: 'A', notes: [[60, 2], [60, 2], [67, 2], [67, 2], [69, 2], [69, 2], [67, 4]] },
     { name: '입력 2~8번째 음', tag: 'Q', notes: [[67, 4], [67, 4], [74, 4], [74, 4], [76, 4], [76, 4], [74, 8]] }
   ];
-  const CWD = 72, GAP = 6, HI = 76, LO = 60, DMAX = 8, RH = 4;
   const sign = v => v > 0 ? '+' + v : v < 0 ? '−' + -v : '0';
   const gcd = (a, b) => { while (b) [a, b] = [b, a % b]; return a; };
-  const ratio = (a, b) => { const g = gcd(a, b), n = a / g, d = b / g; return d === 1 ? '×' + n : '×' + n + '/' + d; };
+  const ratio = (a, b) => { const g = gcd(a, b); return b / g === 1 ? '×' + a / g : '×' + a / g + '/' + b / g; };
+  const codes = new Map(), num = t => { if (!codes.has(t)) codes.set(t, codes.size + 3); return codes.get(t); };
+  const EX = 2;  // 계산 예시로 보여 줄 칸
   let h = '';
-  MEL.forEach(m => {
-    const W = 7 * CWD + 6 * GAP, H = (HI - LO) * RH + 16;
-    const bars = m.notes.map(([p, d], k) => {
-      const w = d / DMAX * (CWD - 8), cx = k * (CWD + GAP) + CWD / 2;
-      return `<rect x="${cx - w / 2}" y="${(HI - p) * RH + 4}" width="${w}" height="8" rx="4"/>`;
-    }).join('');
+  MEL.forEach((m, mi) => {
+    const ch = m.notes.map(([p, d], k) => k ? { t: `${sign(p - m.notes[k - 1][0])} ${ratio(d, m.notes[k - 1][1])}` } : null);
+    ch.forEach(c => c && (c.n = num(c.t)));
+    const x = k => mi === 0 && k === EX ? ' x' : '';
     h += `<div class="nm"><span class="chip ${m.tag === 'Q' ? 'q' : ''}">${m.tag}</span>${m.name}</div>`;
-    h += `<span class="k">음</span><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">${bars}</svg>`;
-    h += `<span class="k">높이 길이</span>` + m.notes.map(([p, d]) => `<span class="v">${p} ${d}</span>`).join('');
-    h += `<span class="k">높이 변화</span>` + m.notes.map(([p], k) => k ? `<span class="v c">${sign(p - m.notes[k - 1][0])}</span>` : '<span class="v s">시작</span>').join('');
-    h += `<span class="k">길이 비율</span>` + m.notes.map(([, d], k) => k ? `<span class="v c">${ratio(d, m.notes[k - 1][1])}</span>` : '<span class="v s">시작</span>').join('');
+    h += `<span class="k"></span>` + m.notes.map((_, k) => `<span class="ix">${k}번 칸</span>`).join('');
+    h += `<span class="k">원래 값</span>` + m.notes.map(([p, d], k) => `<span class="v${x(k)}">${p}, ${d}</span>`).join('');
+    h += `<span class="k">앞 칸과 변화</span>` + ch.map((c, k) => c ? `<span class="v d${x(k)}">${c.t}</span>` : '<span class="v s">없음</span>').join('');
+    h += `<span class="k">저장 번호</span>` + ch.map((c, k) => c ? `<span class="v c${x(k)}">${c.n}</span>` : '<span class="v c"><i class="dot"></i></span>').join('');
   });
-  h += '<p class="ok">높이 변화와 길이 비율이 칸마다 모두 같음 → 같은 멜로디 (키 +7, 길이 2배)</p>';
+  const a = MEL[0].notes;
+  h += `<p class="ok"><b>읽는 법</b> 원래 값 = (음 높이, 길이). 음 높이는 MIDI 번호(60 = 가운데 도), 길이는 시간 단위.<br>
+  <b>예: A ${EX}번 칸</b> 높이 ${a[EX][0]} − ${a[EX - 1][0]} = ${sign(a[EX][0] - a[EX - 1][0])}, 길이 ${a[EX][1]} ÷ ${a[EX - 1][1]} = ×1 → 처음 나온 변화라 새 번호 ${num(`${sign(a[EX][0] - a[EX - 1][0])} ×1`)}. 같은 변화가 다시 나오면 같은 번호.<br>
+  <b>결과</b> 원래 값은 달라도 저장 번호가 모두 같음 → 같은 멜로디.</p>`;
   document.getElementById('chg').innerHTML = h;
 }
 {

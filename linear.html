@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=11">
+<link rel="stylesheet" href="common.css?v=12">
 </head>
 <body>
 <div class="app">
@@ -23,43 +23,27 @@
 </div>
 </div>
 <script type="text/plain" id="src">
-// raw_match_length()는 main.cpp의 공통 함수
-// 입력 i번, 곡 j번부터 몇 칸 연속으로 같은 멜로디인지 센다
-int raw_match_length(const Melody& q, int i, const Melody& m, int j, int limit) {
-    // 첫 칸 쌍의 길이 비율 (약분한 정수 두 개)
-    long long g = gcd_ll(q.notes[i].length, m.notes[j].length);
-    long long ratio_q = q.notes[i].length / g;
-    long long ratio_m = m.notes[j].length / g;
+// letter(), common_length()는 main.cpp의 공통 함수
+// s번에서 시작하는 조각의 k번째 변화 글자
+int letter(const Melody& m, int s, int k) {
+    if (k == 0) return m.notes[s].pitch == -1 ? START_REST : START_NOTE;  // 첫 칸은 시작 표시
+    int p = s + k;
+    if (p == m.patch[s]) return m.edge_no_pitch[p];  // 쉼으로 시작한 조각의 예외
+    return m.edge[p];
+}
 
-    bool has_shift = false;  // 높이 차이를 아직 정하지 않음
-    int shift = 0;
-
+// 두 위치부터 변화 글자가 몇 칸 연속 같은지
+int common_length(const Melody& a, int sa, const Melody& b, int sb, int limit) {
+    int len_a = min((int)a.notes.size() - sa, limit);
+    int len_b = min((int)b.notes.size() - sb, limit);
     int k = 0;
-    while (k < limit && i + k < (int)q.notes.size() && j + k < (int)m.notes.size()) {
-        const Note& a = q.notes[i + k];
-        const Note& b = m.notes[j + k];
-
-        if ((a.pitch == -1) != (b.pitch == -1)) break;  // 음·쉼 종류가 다름
-
-        long long gg = gcd_ll(a.length, b.length);
-        if (a.length / gg != ratio_q || b.length / gg != ratio_m) break;  // 길이 비율이 다름
-
-        if (a.pitch != -1) {
-            if (!has_shift) {
-                shift = b.pitch - a.pitch;  // 첫 음 쌍에서 높이 차이 결정
-                has_shift = true;
-            } else if (b.pitch - a.pitch != shift) {  // 높이 차이가 다름
-                break;
-            }
-        }
-        k++;
-    }
+    while (k < len_a && k < len_b && letter(a, sa, k) == letter(b, sb, k)) k++;
     return k;
 }
 
 class LinearArray {
 public:
-    void build(const vector<Melody>&) {}  // 미리 할 일 없음
+    void build(const vector<Melody>&) {}  // 미리 할 일 없음 (변화 글자는 읽을 때 계산)
 
     Result find(const vector<Melody>& blocks, const Melody& query) {
         int r = (int)query.notes.size();
@@ -71,7 +55,7 @@ public:
             // 입력 시작 위치 × 곡 시작 위치, 모든 쌍 비교
             for (int i = 0; i < r; i++) {
                 for (int j = 0; j < (int)block.notes.size(); j++) {
-                    int length = raw_match_length(query, i, block, j, r);
+                    int length = common_length(query, i, block, j, r);
                     if (length > block_best) block_best = length;
                 }
             }
@@ -87,36 +71,29 @@ public:
 };
 </script>
 <script type="text/plain" id="src-py">
-# raw_match_length()는 main.py의 공통 함수
-# 입력 i번, 곡 j번부터 몇 칸 연속으로 같은 멜로디인지 센다
-def raw_match_length(q, i, m, j, limit):
-    # 첫 칸 쌍의 길이 비율 (약분한 정수 두 개)
-    g = gcd_ll(q.notes[i][1], m.notes[j][1])
-    ratio_q = q.notes[i][1] // g
-    ratio_m = m.notes[j][1] // g
-    has_shift = False  # 높이 차이를 아직 정하지 않음
-    shift = 0
+# letter(), common_length()는 main.py의 공통 함수
+# s번에서 시작하는 조각의 k번째 변화 글자
+def letter(m, s, k):
+    if k == 0:  # 첫 칸은 시작 표시
+        return START_REST if m.notes[s][0] == -1 else START_NOTE
+    p = s + k
+    if p == m.patch[s]:  # 쉼으로 시작한 조각의 예외
+        return m.edge_no_pitch[p]
+    return m.edge[p]
+
+# 두 위치부터 변화 글자가 몇 칸 연속 같은지
+def common_length(a, sa, b, sb, limit):
+    len_a = min(len(a.notes) - sa, limit)
+    len_b = min(len(b.notes) - sb, limit)
     k = 0
-    while k < limit and i + k < len(q.notes) and j + k < len(m.notes):
-        a_pitch, a_length = q.notes[i + k]
-        b_pitch, b_length = m.notes[j + k]
-        if (a_pitch == -1) != (b_pitch == -1):  # 음·쉼 종류가 다름
-            break
-        gg = gcd_ll(a_length, b_length)
-        if a_length // gg != ratio_q or b_length // gg != ratio_m:  # 길이 비율이 다름
-            break
-        if a_pitch != -1:
-            if not has_shift:
-                shift = b_pitch - a_pitch  # 첫 음 쌍에서 높이 차이 결정
-                has_shift = True
-            elif b_pitch - a_pitch != shift:  # 높이 차이가 다름
-                break
+    while k < len_a and k < len_b and letter(a, sa, k) == letter(b, sb, k):
         k += 1
     return k
 
 class LinearArray:
 
     # 순차 배열은 별도의 색인을 만들지 않음
+    # 읽을 때 만든 변화 글자 배열을 그대로 사용
     def build(self, blocks):
         pass
 
@@ -139,8 +116,8 @@ class LinearArray:
                 # 원곡 멜로디의 모든 시작 위치
                 for j in range(len(block.notes)):
 
-                    # 두 위치부터 연속으로 일치하는 길이 계산
-                    length = raw_match_length(
+                    # 두 위치부터 변화 글자가 연속으로 같은 길이 계산
+                    length = common_length(
                         query, i, block, j, r
                     )
 
@@ -160,7 +137,7 @@ class LinearArray:
         # 최대 일치 길이와 정렬된 곡명 반환
         return best, sorted(names)
 </script>
-<script src="common.js?v=9"></script>
+<script src="common.js?v=10"></script>
 <script>
 {
 // 순차 배열 예제: 블록 길이 16, 9, 8칸, 입력 5칸 (입력 첫 칸은 틀린 음)
@@ -171,16 +148,21 @@ const blocks = [
   mk('C', 'ABC 노래', [[65, 2], [65, 2], [72, 2], [72, 2], [74, 2], [74, 2], [72, 4], [70, 2]])
 ];
 const Q = mk('Q', '입력 구절', [[55, 2], [62, 4], [62, 4], [64, 4], [64, 4]], true), r = Q.notes.length;
+// 데이터를 읽을 때 칸마다 앞 칸과의 변화(음/쉼 종류, 높이 변화, 길이 비율)를 번호로 바꿔 저장. 같은 변화 = 같은 번호
+const dict = new Map(), code = t => { if (!dict.has(t)) dict.set(t, dict.size + 3); return dict.get(t); };
+[...blocks, Q].forEach(m => makeLetters(m, code));
 const A = blocks[0], X = PX + LBL, NMAX = Math.max(...blocks.map(m => m.notes.length)), total = blocks.reduce((t, m) => t + m.notes.length, 0);
 // 모든 쌍의 일치 길이 (코드와 같은 순서: 블록 → 입력 시작 i → 블록 시작 j)
-const K = blocks.map(m => Q.notes.map((_, i) => m.notes.map((_, j) => rawMatch(Q, i, m, j))));
+const K = blocks.map(m => Q.notes.map((_, i) => m.notes.map((_, j) => common(Q, i, m, j))));
 const L = Math.max(...K.flat(2));
 const best = [];
 blocks.forEach((m, b) => K[b].forEach((row, i) => row.forEach((k, j) => { if (k === L) best.push({ m, i, j }); })));
 const names = [...new Set(best.map(x => x.m.name))];
 
-// 배열 칸: 칸 안 숫자 = 배열 번호
-const cells = (from, to, cls) => { let h = ''; for (let c = from; c < to; c++) h += `<span class="tl ${cls(c) || ''}">${c}</span>`; return `<div class="row">${h}</div>`; };
+// 배열 칸: 칸 안 = 저장된 변화 번호. 비교를 시작하는 칸(s)과 배열 첫 칸은 앞 칸이 없어 시작 표시(● 음, ○ 쉼)
+const startMark = (m, c) => m.notes[c].p < 0 ? '<span class="ring"></span>' : '<span class="dot"></span>';
+const sym = (m, s, c) => c === s || c === 0 ? startMark(m, c) : c > s ? letter(m, s, c - s) : letter(m, 0, c);
+const cells = (m, s, from, to, cls) => { let h = ''; for (let c = from; c < to; c++) h += `<span class="tl ${cls(c) || ''}">${sym(m, s, c)}</span>`; return `<div class="row">${h}</div>`; };
 const lenTag = m => `<span class="note">${m.notes.length}칸</span>`;
 
 // 1. 구축: 받은 그대로 배열로 저장
@@ -188,7 +170,7 @@ const plain = () => {
   const it = [], y = k => k < 3 ? PY + k * 56 : PY + 3 * 56 + 24;
   [...blocks, Q].forEach((m, k) => {
     it.push({ id: 'lab-' + m.tag, x: PX, y: y(k), html: labHTML(m) });
-    it.push({ id: 'arr-' + m.tag, x: X, y: y(k), html: cells(0, m.notes.length, () => '') });
+    it.push({ id: 'arr-' + m.tag, x: X, y: y(k), html: cells(m, 0, 0, m.notes.length, () => '') });
     it.push({ id: 'len-' + m.tag, x: X + m.notes.length * CW + 12, y: y(k) + 5, html: lenTag(m) });
   });
   return { W: X + NMAX * CW + 70, H: y(3) + 52, items: it };
@@ -200,10 +182,10 @@ const pair = (i, j) => {
   const miss = k < over;
   return { W: X + A.notes.length * CW + 150, H: y1 + 66, items: [
     { id: 'lab-A', x: PX, y: y0, html: labHTML(A) },
-    { id: 'arr-A', x: X, y: y0, html: cells(0, A.notes.length, c => c >= j && c < j + k ? 'on' : miss && c === j + k ? 'miss' : c < j || c >= j + over ? 'dim' : '') },
+    { id: 'arr-A', x: X, y: y0, html: cells(A, j, 0, A.notes.length, c => c >= j && c < j + k ? 'on' : miss && c === j + k ? 'miss' : c < j || c >= j + over ? 'dim' : '') },
     { id: 'jm', x: X + j * CW, y: y0 - 26, w: 32, html: `<span class="cap mk">j=${j}</span>` },
     { id: 'lab-Q', x: PX, y: y1, html: labHTML(Q) },
-    { id: 'arr-Q', x: X + (j - i) * CW, y: y1, html: cells(0, r, c => c < i ? 'dim' : c < i + k ? 'on' : miss && c === i + k ? 'miss' : c >= i + over ? 'dim' : '') },
+    { id: 'arr-Q', x: X + (j - i) * CW, y: y1, html: cells(Q, i, 0, r, c => c < i ? 'dim' : c < i + k ? 'on' : miss && c === i + k ? 'miss' : c >= i + over ? 'dim' : '') },
     { id: 'im', x: X + j * CW, y: y1 + 38, w: 32, html: `<span class="cap mk">i=${i}</span>` },
     { id: 'pill', x: X + A.notes.length * CW + 20, y: y0 + 30, html: `<span class="pill ${k === over ? 'blue' : ''}">${k}칸 일치</span>` }
   ] };
@@ -219,14 +201,15 @@ const slideHTML = (b, i) => {
   const lab = (c, cls, t) => `<div class="lab">${chip(c, cls)}<span>${t}</span></div>`;
   return `<div class="sl" data-k="${b}-${i}" style="width:${SW - PX}px">
   <div class="sr" style="top:0">${lab('Q', 'q', '입력')}</div>
-  <div class="sr" style="top:0;left:${SX - PX}px">${cells(0, r, c => c < i ? 'dim' : 'tint')}</div>
+  <div class="sr" style="top:0;left:${SX - PX}px">${cells(Q, i, 0, r, c => c < i ? 'dim' : 'tint')}</div>
   <div class="sr" style="top:5px;left:${SX - PX + r * CW + 12}px"><span class="note">${i ? `앞 ${i}칸 뗌` : '전체'}</span></div>
   <div class="sr sl-st" style="top:0;left:${SX - PX + (r + 4) * CW}px"><span class="pill soft">위치 0</span></div>
-  <div class="sr" style="top:64px">${lab(m.tag, '', '원곡')}</div>
-  <div class="sr sl-m" style="top:64px;left:${SX - PX}px">${cells(0, n, () => '')}</div>
-  <div class="sr sl-q" style="top:108px;left:${SX - PX}px">${cells(i, r, () => 'tint')}</div>
-  <div class="sr" style="top:166px"><span class="note">맞은 칸</span></div>
-  <div class="sr sl-rec" style="top:166px;left:${SX - PX}px">${Array.from({ length: n }, () => '<span></span>').join('')}</div>
+  <div class="sr sl-idx" style="top:50px;left:${SX - PX}px">${Array.from({ length: n }, (_, c) => `<span>${c}</span>`).join('')}</div>
+  <div class="sr" style="top:70px">${lab(m.tag, '', '원곡')}</div>
+  <div class="sr sl-m" style="top:70px;left:${SX - PX}px">${cells(m, 0, 0, n, () => '')}</div>
+  <div class="sr sl-q" style="top:114px;left:${SX - PX}px">${cells(Q, i, i, r, () => 'tint')}</div>
+  <div class="sr" style="top:172px"><span class="note">맞은 칸</span></div>
+  <div class="sr sl-rec" style="top:172px;left:${SX - PX}px">${Array.from({ length: n }, () => '<span></span>').join('')}</div>
 </div>`;
 };
 function runSlide(t, b, i) {
@@ -235,6 +218,7 @@ function runSlide(t, b, i) {
   const m = blocks[b], n = m.notes.length, row = K[b][i], calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ms = [...el.querySelectorAll('.sl-m .tl')], qs = [...el.querySelectorAll('.sl-q .tl')], rec = [...el.querySelectorAll('.sl-rec span')];
   const qrow = el.querySelector('.sl-q'), st = el.querySelector('.sl-st .pill');
+  const base = ms.map(c => c.innerHTML);
   let j = 0, best = 0;
   const alive = () => t === tok && el.isConnected && el.parentElement.style.opacity !== '0' && !document.getElementById('fit').hidden;
   const reset = () => { j = 0; best = 0; rec.forEach(x => { x.textContent = ''; x.className = ''; }); };
@@ -247,7 +231,7 @@ function runSlide(t, b, i) {
     if (j === n) { setTimeout(() => { if (alive()) { reset(); step(); } }, 1800); return; }
     const k = row[j], over = Math.min(r - i, n - j);
     qrow.style.transform = `translateX(${j * CW}px)`;
-    ms.forEach(c => c.className = 'tl'); qs.forEach((c, x) => c.className = 'tl tint' + (x >= over ? ' dim' : ''));
+    ms.forEach((c, x) => { c.className = 'tl'; c.innerHTML = x === j ? startMark(m, j) : base[x]; }); qs.forEach((c, x) => c.className = 'tl tint' + (x >= over ? ' dim' : ''));
     st.textContent = `위치 ${j}`; st.className = 'pill soft';
     setTimeout(() => {
       if (!alive()) return;
@@ -265,7 +249,7 @@ function runSlide(t, b, i) {
 const slide = (b, i) => () => {
   const t = ++tok;
   setTimeout(() => runSlide(t, b, i), 80);
-  return { W: SW, H: PY + 200, items: [{ id: 'sl', x: PX, y: PY, html: slideHTML(b, i) }] };
+  return { W: SW, H: PY + 206, items: [{ id: 'sl', x: PX, y: PY, html: slideHTML(b, i) }] };
 };
 
 // 4. 모든 쌍 표: 채우는 순서 = 코드의 for문 순서
@@ -296,11 +280,11 @@ const result = () => {
   blocks.forEach((m, k) => {
     const seg = best.filter(x => x.m === m), on = c => seg.some(x => c >= x.j && c < x.j + L);
     it.push({ id: 'lab-' + m.tag, x: PX, y: y(k), html: labHTML(m) });
-    it.push({ id: 'arr-' + m.tag, x: X, y: y(k), html: cells(0, m.notes.length, c => on(c) ? 'on' : 'dim') });
+    it.push({ id: 'arr-' + m.tag, x: X, y: y(k), html: cells(m, seg.length ? seg[0].j : 0, 0, m.notes.length, c => on(c) ? 'on' : 'dim') });
   });
   const qi = new Set(best.map(x => x.i)), qon = c => [...qi].some(i => c >= i && c < i + L);
   it.push({ id: 'lab-Q', x: PX, y: y(3), html: labHTML(Q) });
-  it.push({ id: 'arr-Q', x: X, y: y(3), html: cells(0, r, c => qon(c) ? 'on' : 'dim') });
+  it.push({ id: 'arr-Q', x: X, y: y(3), html: cells(Q, [...qi][0], 0, r, c => qon(c) ? 'on' : 'dim') });
   return { W: X + NMAX * CW + 24, H: y(3) + 52, items: it };
 };
 const seg = best.map(x => `${x.m.tag} ${x.j}~${x.j + L - 1}번 칸`).join(', ');
@@ -309,14 +293,14 @@ startPage({
   W: 700,
   next: { href: 'sorted.html', label: '다음 방식: 정렬 배열' },
   steps: [
-    { phase: '구축', label: '그대로 저장', title: '원곡 블록과 입력을 받은 그대로 배열로 저장', desc: ['칸 하나 = 음 하나, 칸 안 숫자 = 배열 번호', '원곡은 블록 단위 배열, 실제 데이터는 곡 하나가 여러 블록 (여기서는 곡마다 블록 하나)', '입력은 최대 32칸이라 블록보다 짧음', '미리 정리하지 않고 검색할 때마다 전부 비교'], frames: [{ draw: still(plain) }] },
+    { phase: '구축', label: '변화 번호 배열', title: '원곡 블록과 입력을 변화 번호 배열로 저장', desc: ['칸마다 앞 칸과의 변화(높이 변화, 길이 비율)를 번호 하나로 저장, 같은 변화 = 같은 번호 (문제 정의 그림 참고)', '● = 앞 칸이 없는 시작 칸', '원곡은 블록 단위 배열, 실제 데이터는 곡 하나가 여러 블록 (여기서는 곡마다 블록 하나)', '입력은 최대 32칸이라 블록보다 짧음', '번호는 데이터를 읽을 때 계산, 그 밖에 미리 정리하는 작업 없음'], frames: [{ draw: still(plain) }] },
     { phase: '검색', label: '한 번 비교', title: '입력 칸을 블록 칸에 맞대고 같은 세로줄끼리 비교', frames: [
-      { title: '입력 0번 칸을 블록 0번 칸에 맞추면 1칸에서 중단', desc: ['같은 세로줄끼리 비교, 흐린 칸은 비교하지 않는 칸', '첫 칸 쌍으로 높이 차이와 길이 비율을 정하고, 다음 칸부터 같은 차이·비율인지 확인', '테두리 칸에서 달라져 비교 중단'], draw: still(() => pair(0, 0)) },
-      { title: '입력 1번 칸을 블록 2번 칸에 맞추면 4칸 연속 일치', desc: ['입력 앞 칸을 떼고, 블록 중간 칸에서 시작하는 쌍도 비교', '그래서 입력과 원곡의 시작이 달라도 일치 구간을 찾음'], draw: still(() => pair(1, 2)) }
+      { title: '입력 0번 칸을 블록 0번 칸에 맞추면 1칸에서 중단', desc: ['같은 세로줄끼리 번호가 같은지 비교, 흐린 칸은 비교하지 않는 칸', '시작 칸은 둘 다 ●라 같음', '다음 칸 번호가 달라 (테두리 칸) 비교 중단'], draw: still(() => pair(0, 0)) },
+      { title: '입력 1번 칸을 블록 2번 칸에 맞추면 4칸 연속 일치', desc: ['입력 1번 칸과 블록 2번 칸이 새 시작 칸이라 ●로 봄', '그 뒤 번호 3, 5, 3이 모두 같아 4칸 일치', '그래서 입력과 원곡의 시작이 달라도 일치 구간을 찾음'], draw: still(() => pair(1, 2)) }
     ] },
     { phase: '검색', label: '한 칸씩 이동', title: '입력을 원곡 맨 앞에 맞추고 한 칸씩 뒤로 옮기며 비교', frames: [
-      { title: '입력 전체로 원곡 맨 앞부터 끝까지 비교', desc: ['위치마다 입력 첫 칸부터 비교, 다른 칸이 나오면 멈춤', '맞은 칸 수를 아래에 기록하고, 맞든 틀리든 한 칸 뒤로', '원곡 끝을 넘는 입력 칸은 비교하지 않음 (흐린 칸)'], draw: slide(0, 0) },
-      { title: '입력 맨 앞 1칸을 떼고 다시 원곡 맨 앞부터', desc: ['남은 입력 4칸으로 같은 과정 반복', '원곡 2번 위치에서 4칸 연속 일치'], draw: slide(0, 1) },
+      { title: '입력 전체로 원곡 맨 앞부터 끝까지 비교', desc: ['위치마다 입력 첫 칸부터 번호 비교, 원곡 쪽 맞춘 칸은 시작 칸(●)으로 봄', '다른 번호가 나오면 멈춤', '맞은 칸 수를 아래에 기록하고, 맞든 틀리든 한 칸 뒤로', '원곡 끝을 넘는 입력 칸은 비교하지 않음 (흐린 칸)'], draw: slide(0, 0) },
+      { title: '입력 맨 앞 1칸을 떼고 다시 원곡 맨 앞부터', desc: ['남은 입력 4칸으로 같은 과정 반복, 입력 1번 칸이 새 시작 칸(●)', '원곡 2번 위치에서 4칸 연속 일치'], draw: slide(0, 1) },
       { title: '입력 맨 앞 2칸을 떼고 다시 원곡 맨 앞부터', desc: '남은 입력 3칸으로 같은 과정 반복.', draw: slide(0, 2) },
       { title: '입력 맨 앞 3칸을 떼고 다시 원곡 맨 앞부터', desc: '남은 입력 2칸으로 같은 과정 반복.', draw: slide(0, 3) },
       { title: '입력이 1칸 남을 때까지 반복하면 원곡 A 끝', desc: ['남은 입력 1칸으로 마지막 반복', `원곡 A에서 비교 ${r} × ${A.notes.length} = ${r * A.notes.length}번, 최댓값 ${Math.max(...K[0].flat())}칸`], draw: slide(0, 4) },
@@ -326,11 +310,11 @@ startPage({
       { desc: ['세로 Q0~Q4는 입력 시작 칸 i, 가로는 블록별 시작 칸 j', '네모 하나 = 한 위치에서 비교 한 번', '건너뛰는 쌍 없이 모두 확인'], draw: still(() => matrix(false)) },
       { title: '채워지는 순서 = 코드의 반복 순서, 진할수록 길게 일치', desc: ['블록 A의 Q0 줄 → Q1 줄 → … → Q4 줄 → 블록 B → 블록 C 순서, 한 줄 = 앞 단계의 한 번 이동', `숫자 ${L}가 가장 긴 일치`, '블록이 늘면 가로 칸도 늘어 비교 횟수가 데이터에 비례'], draw: still(() => matrix(true)) }
     ] },
-    { phase: '결과', label: '결과', title: `가장 긴 일치 ${L}칸, 해당 곡 ${names.length}곡`, desc: [`입력 ${[...new Set(best.map(x => x.i))].map(i => `${i}~${i + L - 1}번 칸`).join(', ')}이 ${seg}과 일치`, 'C는 A와 같은 노래를 다른 키로 부른 곡이라 함께 일치'], frames: [{ draw: still(result) }] },
+    { phase: '결과', label: '결과', title: `가장 긴 일치 ${L}칸, 해당 곡 ${names.length}곡`, desc: [`입력 ${[...new Set(best.map(x => x.i))].map(i => `${i}~${i + L - 1}번 칸`).join(', ')}이 ${seg}과 일치`, 'C는 A와 같은 노래를 다른 키로 부른 곡, 변화 번호가 같아 함께 일치'], frames: [{ draw: still(result) }] },
     bigOStep('[[O(N) 선형 시간]]: 입력마다 원곡의 모든 시작 위치 비교', [
-      { label: '구축', factors: [['0', '미리 할 작업 없음']], ops: [], result: 'O(1)' },
+      { label: '구축', factors: [['0', '정리 작업 없음']], ops: [], result: 'O(1)' },
       { label: '검색', factors: [['r', '입력 시작 위치'], ['N', '원곡 시작 위치'], ['r', '비교 한 번 최대 칸']], ops: ['×', '×'], result: 'O(r²·N)' }
-    ], ['N = 원곡 전체 음 개수(조각 수), r = 입력 음 개수(최대 32)', '미리 만든 구조가 없어 입력이 올 때마다 원곡의 모든 시작 위치를 처음부터 확인', '시작 위치 쌍 r × N개마다 최대 r칸 비교, 대부분 몇 칸 안에 끝나 실제로는 r × N에 가까움', 'r은 32 이하로 고정이라 원곡이 10배 늘면 비교도 10배, 그래서 O(N)']),
+    ], ['N = 원곡 전체 음 개수(조각 수), r = 입력 음 개수(최대 32)', '변화 번호는 데이터를 읽을 때 세 방식 공통으로 계산, 구축 시간에서 제외', '미리 만든 구조가 없어 입력이 올 때마다 원곡의 모든 시작 위치를 처음부터 확인', '시작 위치 쌍 r × N개마다 최대 r칸 비교, 대부분 몇 칸 안에 끝나 실제로는 r × N에 가까움', 'r은 32 이하로 고정이라 원곡이 10배 늘면 비교도 10배, 그래서 O(N)']),
     codeStep('01_linear_array.cpp'),
     codeStep('01_linear_array.py', 'py')
   ]

@@ -318,5 +318,5 @@ function startPage(cfg) {
   render();
 }
 
-Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, plen, letter, common, less, rawMatch, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, bigOStep, codeStep, startPage });
+Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, START_REST, makeLetters, plen, letter, common, less, rawMatch, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, bigOStep, codeStep, startPage });
 }

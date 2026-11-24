@@ -238,17 +238,20 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .cap.rt{display:block;text-align:right}
 .note.hit{color:var(--blue-ink);font-weight:700}
 
-/* 문제 정의: 변화량 그림 */
-.chg{display:grid;grid-template-columns:96px repeat(7,72px);gap:6px;margin:14px 0 16px}
-.chg .nm{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:6px;font-size:15px;font-weight:700}
+/* 문제 정의: 변화 번호 표 */
+.chg{display:grid;grid-template-columns:96px repeat(7,minmax(0,1fr));gap:6px;margin:14px 0 4px}
+.chg .nm{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:10px;font-size:15px;font-weight:700}
 .chg .nm:first-child{margin-top:0}
 .chg .k{align-self:center;font-size:13.5px;font-weight:600;color:var(--sub)}
-.chg svg{grid-column:2/-1;display:block}
-.chg rect{fill:var(--sub)}
-.chg .v{height:32px;border-radius:8px;background:var(--fill);display:grid;place-items:center;font:500 14px "JetBrains Mono",ui-monospace,Consolas,monospace;font-variant-ligatures:none}
-.chg .v.c{background:var(--blue-weak);color:var(--blue-ink);font-weight:600}
+.chg .ix{text-align:center;font-size:12px;font-weight:600;color:var(--mute)}
+.chg .v{height:32px;border-radius:8px;background:var(--fill);display:grid;place-items:center;font:500 14px "JetBrains Mono",ui-monospace,Consolas,monospace;font-variant-ligatures:none;white-space:nowrap}
+.chg .v.d{background:none;box-shadow:inset 0 0 0 1px var(--line);color:var(--sub);font-size:13px}
+.chg .v.c{background:var(--blue-weak);color:var(--blue-ink);font-weight:700;font-size:15px}
 .chg .v.s{background:none;color:var(--mute);font-family:inherit;font-size:13.5px;font-weight:600}
-.chg .ok{grid-column:1/-1;margin:8px 0 0;padding:12px 16px;border-radius:12px;background:var(--blue-weak);color:var(--blue-ink);font-size:15px;font-weight:700}
+.chg .v.x{box-shadow:inset 0 0 0 2px var(--blue)}
+.chg .dot{width:10px;height:10px;border-radius:50%;background:currentColor}
+.chg .ok{grid-column:1/-1;margin:10px 0 0;padding:14px 16px;border-radius:12px;background:var(--fill);font-size:15px;line-height:1.8}
+.chg .ok b{margin-right:8px;color:var(--blue-ink)}
 .sl{position:relative;height:200px}
 .sl .sr{position:absolute;left:0}
 .sl .sl-q{transition:transform .28s cubic-bezier(.2,.8,.2,1)}
@@ -256,3 +259,5 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .sl-rec span{width:32px;text-align:center;font-size:16px;font-weight:700;color:var(--sub)}
 .sl-rec span.hit{color:var(--blue-ink)}
 @media(prefers-reduced-motion:reduce){.sl .sl-q{transition:none}}
+.sl-idx{display:flex;gap:4px}
+.sl-idx span{width:32px;text-align:center;font-size:12px;font-weight:600;color:var(--mute)}
