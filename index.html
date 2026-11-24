@@ -15,7 +15,7 @@
   <p class="brand"><svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6.6" cy="18.2" rx="3.7" ry="2.8" transform="rotate(-20 6.6 18.2)"/><ellipse cx="18" cy="16.2" rx="3.7" ry="2.8" transform="rotate(-20 18 16.2)"/><rect x="9.2" y="5.2" width="1.9" height="13"/><rect x="20.6" y="3.2" width="1.9" height="13"/><path d="M9.2 5.2 22.5 2.6v3.4L9.2 8.6z"/></svg>최장 멜로디 검색</p>
   <nav class="tabs" aria-label="페이지"><a href="index.html" aria-current="page">문제 정의</a><a href="linear.html">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html">체이닝 해시</a><a href="compare.html">비교</a></nav>
   <nav class="steps" aria-label="목차"><div class="grp"><div class="pills" id="toc">
-    <a href="#problem">문제</a><a href="#input">입력</a><a href="#output">출력</a><a href="#limit">제한</a><a href="#example">예제</a>
+    <a href="#problem">문제</a><a href="#input">입력</a><a href="#output">출력</a><a href="#limit">제한</a><a href="#data">데이터</a><a href="#example">예제</a>
   </div></div></nav>
 </aside>
 <div class="content">
@@ -49,7 +49,17 @@
       <li><code>p</code> = -1 또는 0 ≤ <code>p</code> ≤ 127 (MIDI 음 높이)</li>
       <li><code>d</code>는 양의 정수. 최댓값 4,294,967,557로 32비트 범위 초과, 64비트 정수 필요</li>
       <li>블록 길이 <code>n</code> ≤ 7,425</li>
-      <li>전체 데이터: 블록 310,265개, 항목 30,477,226개 (Lakh MIDI 단선율 구간)</li>
+    </ul>
+  </section>
+
+  <section id="data">
+    <h2>데이터</h2>
+    <ul>
+      <li>출처: Lakh MIDI Dataset v0.1의 Clean MIDI 부분집합 (Colin Raffel, CC BY 4.0). MIDI 파일 17,256개.</li>
+      <li>추출: 타악기와 음이 겹치는 구간을 빼고, 실제 음이 8개 이상 이어지는 단선율 구간만 블록으로 저장. 주선율을 따로 고르지는 않아 다른 악기의 단선율도 포함.</li>
+      <li>규모: 파일 16,472개에서 블록 310,265개, 항목 30,477,226개 (음 16,795,768개, 쉼 13,681,458개). 같은 곡이 여러 블록으로 나뉨.</li>
+      <li>값: 음 높이는 MIDI 번호, 길이는 원본 tick 그대로. 옮기거나 약분하지 않음.</li>
+      <li>실험: 블록 순서를 섞은 뒤 앞에서부터 1천~100만 항목을 사용. 입력은 유형마다 50개, 16칸. 수록곡은 데이터 속 곡에서 그대로 자른 구간, 변형은 수록곡 구간을 키 변경·길이 2배·가운데 음 하나 변경, 미수록곡은 데이터에 없는 곡에서 자른 구간.</li>
     </ul>
   </section>
 
