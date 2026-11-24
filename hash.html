@@ -23,10 +23,7 @@
 </div>
 </div>
 <script type="text/plain" id="src">
-// letter(), raw_match_length()는 main.cpp의 공통 함수
-const long long MOD = 1000000007;  // 나머지를 구할 소수
-const long long BASE = 911382323;  // 자릿값
-
+// letter(), common_length()는 main.cpp의 공통 함수
 // 표에 저장하는 항목
 struct Entry {
     long long hash;
@@ -48,7 +45,7 @@ class HashTable {
     static void piece_hashes(const Melody& m, int s, int max_len, long long hashes[]) {
         long long h = 0;
         for (int length = 1; length <= max_len; length++) {
-            h = (h * BASE + letter(m, s, length - 1)) % MOD;  // 기호 하나를 뒤에 붙임
+            h = (h * 911382323 + letter(m, s, length - 1)) % 1000000007;  // 글자 하나를 뒤에 붙임 (911382323 = 자릿값, 1000000007 = 나머지를 구할 소수)
             hashes[length] = h;
         }
     }
@@ -57,7 +54,7 @@ class HashTable {
     bool check(const vector<Melody>& blocks, const Melody& query,
                const vector<vector<long long>>& query_hashes, int L,
                bool collect, set<string>& names) {
-        int r = (int)query.notes.size();
+        int r = query.size();
         const Table& table = tables[L];
 
         for (int i = 0; i + L <= r; i++) {
@@ -67,7 +64,7 @@ class HashTable {
             for (int e = table.offset[c]; e < table.offset[c + 1]; e++) {  // 그 칸의 항목만 확인
                 const Entry& entry = table.entries[e];
                 if (entry.hash != h) continue;  // 해시값이 다르면 다른 조각
-                if (raw_match_length(query, i, blocks[entry.block], entry.start, L) < L)  // 실제 음까지 비교해 충돌 제외
+                if (common_length(query, i, blocks[entry.block], entry.start, L) < L)  // 변화 글자까지 비교해 충돌 제외
                     continue;
                 if (!collect) return true;  // 이진 탐색 중에는 하나만 찾으면 끝
                 names.insert(blocks[entry.block].name);
@@ -84,7 +81,7 @@ public:
         for (int L = 1; L <= MAX_INPUT; L++) {
             long long count = 0;
             for (const Melody& block : blocks) {
-                int n = (int)block.notes.size();
+                int n = block.size();
                 if (n >= L) count += n - L + 1;
             }
             tables[L].offset.assign((count > 0 ? count : 1) + 1, 0);
@@ -95,7 +92,7 @@ public:
         long long hashes[MAX_INPUT + 1];
 
         for (const Melody& block : blocks) {
-            int n = (int)block.notes.size();
+            int n = block.size();
             for (int s = 0; s < n; s++) {
                 int max_len = min(MAX_INPUT, n - s);
                 piece_hashes(block, s, max_len, hashes);
@@ -118,7 +115,7 @@ public:
             next[L].assign(tables[L].offset.begin(), tables[L].offset.end() - 1);
 
         for (int b = 0; b < (int)blocks.size(); b++) {
-            int n = (int)blocks[b].notes.size();
+            int n = blocks[b].size();
             for (int s = 0; s < n; s++) {
                 int max_len = min(MAX_INPUT, n - s);
                 piece_hashes(blocks[b], s, max_len, hashes);
@@ -134,7 +131,7 @@ public:
     }
 
     Result find(const vector<Melody>& blocks, const Melody& query) {
-        int r = (int)query.notes.size();
+        int r = query.size();
 
         // 1. 입력 조각의 해시값 계산
         vector<vector<long long>> query_hashes(r, vector<long long>(r + 1, 0));
@@ -161,7 +158,7 @@ public:
 };
 </script>
 <script type="text/plain" id="src-py">
-# letter(), raw_match_length()는 main.py의 공통 함수
+# letter(), common_length()는 main.py의 공통 함수
 MOD = 1000000007
 BASE = 911382323
 MAX_INPUT = 32
@@ -192,7 +189,7 @@ class HashTable:
     def check(self, blocks, query, query_hashes,
               L, collect, names):
 
-        r = len(query.notes)
+        r = query.size()
         table = self.tables[L]
 
         # 입력의 모든 길이 L 조각 확인
@@ -212,8 +209,8 @@ class HashTable:
                 if entry_hash != h:
                     continue
 
-                # 실제 멜로디가 일치하는지 확인
-                length = raw_match_length(
+                # 변화 글자가 실제로 같은지 확인
+                length = common_length(
                     query, i, blocks[b], s, L
                 )
 
@@ -241,7 +238,7 @@ class HashTable:
 
             for block in blocks:
 
-                n = len(block.notes)
+                n = block.size()
 
                 if n >= L:
                     count += n - L + 1
@@ -254,7 +251,7 @@ class HashTable:
         # 모든 블록의 모든 시작 위치 확인
         for b in range(len(blocks)):
 
-            n = len(blocks[b].notes)
+            n = blocks[b].size()
 
             for s in range(n):
 
@@ -278,7 +275,7 @@ class HashTable:
     # 4. 가장 긴 일치 구간 검색
     def find(self, blocks, query):
 
-        r = len(query.notes)
+        r = query.size()
 
         # 입력 조각들의 해시값 계산
         query_hashes = []
@@ -323,7 +320,7 @@ class HashTable:
 
         return best, sorted(names)
 </script>
-<script src="common.js?v=9"></script>
+<script src="common.js?v=11"></script>
 <script>
 {
 const M = buildModel(), { songs, query: Q, L } = M, A = songs[0];
@@ -420,7 +417,7 @@ const find = (i, step) => () => {
 };
 
 // 6. 길이 좁히기 (C++ find 2단계: low = 1, high = 입력 길이)
-const has = len => Q.notes.some((_, i) => i + len <= r && songs.some(m => m.notes.some((_, j) => rawMatch(Q, i, m, j) >= len)));
+const has = len => Q.notes.some((_, i) => i + len <= r && songs.some(m => m.notes.some((_, j) => common(Q, i, m, j) >= len)));
 const narrow = [];
 {
   let lo = 1, hi = r; const done = {};
@@ -478,8 +475,8 @@ startPage({
     { phase: '구축', label: '길이별 표', title: '길이 1~7, 길이마다 표 하나씩 생성', desc: '입력과 몇 칸이 일치할지 미리 알 수 없어 길이 1~7 표를 모두 생성. 표마다 조각을 다시 저장해 정렬 배열보다 메모리를 더 사용.', frames: [{ draw: lenRows }] },
     { phase: '검색', label: '칸 찾기', title: '입력 조각도 같은 방법으로 칸 번호 계산', frames: [
       { desc: [`입력 조각 Q${QI}의 해시값 계산`, `조각 수 ${NB}로 나눈 나머지로 칸 번호 ${qb} 결정`, '원곡과 같은 모양이면 같은 숫자라 같은 칸'], draw: find(QI, false) },
-      { title: '그 칸의 항목만 꺼내 실제 음과 비교해 확인', desc: `${qb}번 칸의 항목만 확인하고 다른 칸은 보지 않음. 해시값과 실제 음이 모두 같은 ${okAt(qb, qHash(QI).h)} 확인.`, draw: find(QI, true) },
-      ...(QO >= 0 ? [{ title: '[[해시 충돌]]이 난 칸에서는 해시값이 같은 항목만 선택', desc: [`입력 조각 Q${QO}의 칸 번호 ${ob} 계산`, `${ob}번 칸에는 [[해시 충돌]]로 다른 조각 ${dropAt(ob, qHash(QO).h)}도 함께 저장`, '저장해 둔 해시값이 다른 항목은 바로 제외(흐린 칸)', '해시값이 같은 항목만 실제 음과 비교'], draw: find(QO, true) }] : [])
+      { title: '그 칸의 항목만 꺼내 변화 기호를 하나씩 비교해 확인', desc: `${qb}번 칸의 항목만 확인하고 다른 칸은 보지 않음. 해시값과 변화 기호가 모두 같은 ${okAt(qb, qHash(QI).h)} 확인.`, draw: find(QI, true) },
+      ...(QO >= 0 ? [{ title: '[[해시 충돌]]이 난 칸에서는 해시값이 같은 항목만 선택', desc: [`입력 조각 Q${QO}의 칸 번호 ${ob} 계산`, `${ob}번 칸에는 [[해시 충돌]]로 다른 조각 ${dropAt(ob, qHash(QO).h)}도 함께 저장`, '저장해 둔 해시값이 다른 항목은 바로 제외(흐린 칸)', '해시값이 같은 항목만 변화 기호를 하나씩 비교'], draw: find(QO, true) }] : [])
     ] },
     { phase: '검색', label: '길이 좁히기', title: `길이 1~${r} 범위를 절반씩 줄여 가장 긴 일치 길이 탐색`, frames:
       narrow.map((t, k) => ({ title: lineTitle(t, k === narrow.length - 1) || undefined, desc: lineDesc(t), draw: line(t) })) },

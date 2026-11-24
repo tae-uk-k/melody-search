@@ -54,18 +54,6 @@ function less(a, sa, b, sb) {
   if (k === la || k === lb) return la < lb;
   return letter(a, sa, k) < letter(b, sb, k);
 }
-// ---------- 계산: 원래 값 직접 비교 (① 순차 배열, ③의 확인 단계) ----------
-function rawMatch(a, sa, b, sb) {
-  const n = Math.min(plen(a, sa), plen(b, sb)), a0 = a.notes[sa], b0 = b.notes[sb];
-  let k = 0, diff = null;
-  for (; k < n; k++) {
-    const x = a.notes[sa + k], y = b.notes[sb + k];
-    if ((x.p < 0) !== (y.p < 0)) break;          // 음과 쉼이 다름
-    if (x.d * b0.d !== y.d * a0.d) break;        // 길이 비율이 첫 칸과 다름
-    if (x.p >= 0) { const d = y.p - x.p; if (diff === null) diff = d; else if (d !== diff) break; }  // 높이 차이가 다름
-  }
-  return k;
-}
 // ---------- 계산: 해시값 ----------
 const BASE = 911382323n, MOD = 1000000007n;
 function hashOf(m, s, L) { let h = 0n; for (let k = 0; k < L; k++) h = (h * BASE + BigInt(letter(m, s, k))) % MOD; return h; }
@@ -79,7 +67,7 @@ function buildModel() {
   // 가장 긴 일치 (세 방식 모두 같은 답)
   let L = 0;
   const all = [];
-  query.notes.forEach((_, i) => songs.forEach(m => m.notes.forEach((_, j) => { const k = rawMatch(query, i, m, j); all.push({ i, m, j, k }); L = Math.max(L, k); })));
+  query.notes.forEach((_, i) => songs.forEach(m => m.notes.forEach((_, j) => { const k = common(query, i, m, j); all.push({ i, m, j, k }); L = Math.max(L, k); })));
   const best = all.filter(x => x.k === L && L > 0);
   return { songs, query, L, best, names: [...new Set(best.map(x => x.m.name))] };
 }
@@ -318,5 +306,5 @@ function startPage(cfg) {
   render();
 }
 
-Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, START_REST, makeLetters, plen, letter, common, less, rawMatch, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, bigOStep, codeStep, startPage });
+Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, START_REST, makeLetters, plen, letter, common, less, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, bigOStep, codeStep, startPage });
 }
