@@ -143,6 +143,8 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .tl.on{background:var(--blue);color:#fff}
 .tl.miss{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--ink)}
 .tl.dim{opacity:.25}
+.tl.sep{background:none;box-shadow:inset 0 0 0 2px var(--line);color:var(--mute)}
+.tl .un{font-size:11px;letter-spacing:-.04em}
 
 .band{border-radius:12px;background:var(--blue-weak)}
 .brk{width:4px;border-radius:2px;background:var(--blue)}

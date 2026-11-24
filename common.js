@@ -15,13 +15,18 @@ const MEASURED = {
   hash: [['1만 항목', 1.51], ['10만 항목', 1.43], ['100만 항목', 1.59]]
 };
 
-const START_NOTE = 1, START_REST = 2;
+const START_NOTE = 1, START_REST = 2, SEP = 0, UNSEEN = 2147483647;  // SEP: 곡 끝 구분 칸, UNSEEN: 입력에만 있는 변화 (가장 큰 번호)
 const CW = 36, RH = 38, LBL = 176, PX = 24, PY = 20;
 const gcd = (a, b) => { while (b) [a, b] = [b, a % b]; return a; };
 const kindOf = n => n.p < 0 ? '쉼' : '음';
 
 // ---------- 계산: 변화 글자 (② 정렬 배열, ③ 체이닝 해시) ----------
-function makeLetters(m, dict) {
+// 사전: 원곡(add)은 처음 보는 변화에 새 번호(3부터), 입력은 사전에 없으면 UNSEEN
+function makeDict() {
+  const map = new Map();
+  return (t, add) => { if (map.has(t)) return map.get(t); if (!add) return UNSEEN; map.set(t, map.size + 3); return map.size + 2; };
+}
+function makeLetters(m, dict, add = true) {
   const n = m.notes.length;
   m.edge = Array(n).fill(0); m.nop = Array(n).fill(0); m.patch = Array(n).fill(-1);
   let last = -1;
@@ -29,8 +34,8 @@ function makeLetters(m, dict) {
     if (p > 0) {
       const bf = m.notes[p - 1], g = gcd(now.d, bf.d), kinds = kindOf(bf) + '>' + kindOf(now);
       const change = now.p >= 0 && last >= 0 ? now.p - last : 0;
-      m.edge[p] = dict(`${kinds} ${now.d / g}/${bf.d / g} ${change}`);
-      m.nop[p] = dict(`${kinds} ${now.d / g}/${bf.d / g} 0`);
+      m.edge[p] = dict(`${kinds} ${now.d / g}/${bf.d / g} ${change}`, add);
+      m.nop[p] = dict(`${kinds} ${now.d / g}/${bf.d / g} 0`, add);
     }
     if (now.p >= 0) last = now.p;
   });
@@ -62,8 +67,12 @@ function buildModel() {
   const mk = (tag, name, arr) => ({ tag, name, notes: arr.map(([p, d]) => ({ p, d })) });
   const songs = SONGS.map(s => mk(s.tag, s.name, s.notes)), query = mk('Q', '입력 구절', QUERY);
   query.q = true;
-  const map = new Map(), dict = t => { if (!map.has(t)) map.set(t, map.size + 3); return map.get(t); };
-  [...songs, query].forEach(m => makeLetters(m, dict));
+  const dict = makeDict();
+  songs.forEach(m => makeLetters(m, dict));
+  makeLetters(query, dict, false);  // 입력은 사전에 새 번호를 넣지 않음
+  // 원곡은 배열 하나에 이어 붙임: base = 배열 안 첫 위치, 곡 끝마다 구분 칸 하나
+  let at = 0;
+  songs.forEach(m => { m.base = at; at += m.notes.length + 1; });
   // 가장 긴 일치 (세 방식 모두 같은 답)
   let L = 0;
   const all = [];
@@ -85,18 +94,27 @@ function contourHTML(m, o = {}) {
     return `<span class="${cls}"><i style="top:${36 - (n.p - lo) * 2.4}px;width:${12 + 22 * n.d / dmax}px"></i></span>`;
   }).join('')}</div>`;
 }
-// 변화 글자 칸: 첫 칸은 시작 표시(● 음, ○ 쉼), 나머지는 변화 번호. 같은 변화 = 같은 번호
+// 칸 안 글자: 입력에만 있는 변화(UNSEEN)는 "최대"
+const symHTML = c => c === UNSEEN ? '<span class="un">최대</span>' : c;
+// 곡 끝 구분 칸 (번호 0)
+const sepHTML = (cls = '') => `<span class="tl sep ${cls}">0</span>`;
+// 칸 위 위치 번호 줄: from부터 len칸
+const idxHTML = (from, len) => `<div class="sl-idx">${Array.from({ length: len }, (_, k) => `<span>${from + k}</span>`).join('')}</div>`;
+// 조각 이름: 원곡은 배열 안 위치 번호, 입력은 Q + 시작 칸
+const pname = (m, s) => m.q ? 'Q' + s : String(m.base + s);
+// 변화 글자 칸: 첫 칸은 시작 표시(● 음, ○ 쉼), 나머지는 변화 번호. 같은 변화 = 같은 번호. o.sep: 끝에 구분 칸
 function tilesHTML(m, s, len, o = {}) {
   let h = '';
   for (let k = 0; k < len; k++) {
     const c = letter(m, s, k);
     const inR = o.range && k >= o.range[0] && k < o.range[1];
     const cls = `tl${o.on > k ? ' on' : o.tint > k || inR ? ' tint' : ''}${o.miss === k ? ' miss' : ''}${(o.dimFrom != null && k >= o.dimFrom) || (o.range && !inR) ? ' dim' : ''}`;
-    h += `<span class="${cls}">${k === 0 ? `<span class="${c === START_REST ? 'ring' : 'dot'}"></span>` : c}</span>`;
+    h += `<span class="${cls}">${k === 0 ? `<span class="${c === START_REST ? 'ring' : 'dot'}"></span>` : symHTML(c)}</span>`;
   }
+  if (o.sep) h += sepHTML(o.sepCls);
   return `<div class="row">${h}</div>`;
 }
-const pieceHTML = (m, s, o = {}) => `<div class="pc">${chip(m.tag + s, o.chip || (m.q ? 'q' : ''))}${tilesHTML(m, s, o.len ?? plen(m, s), o)}</div>`;
+const pieceHTML = (m, s, o = {}) => `<div class="pc">${chip(pname(m, s), o.chip || (m.q ? 'q' : ''))}${tilesHTML(m, s, o.len ?? plen(m, s), o)}</div>`;
 
 // ---------- 함께 쓰는 단계 ----------
 // 변화 글자로 바꾸기 (② ③)
@@ -122,9 +140,21 @@ function changeStep(M) {
     frames: [
       { title: '저장할 원곡 3곡', desc: '막대 높이는 음 높이, 막대 길이는 음 길이. A와 C는 같은 노래를 다른 키로 부른 곡.', draw: () => ({ W, H: top(3) - 30, items: rows('contour') }) },
       { desc: ['칸마다 바로 앞 음과 비교', '높이 차이와 길이 비율을 번호 하나로 기록, 같은 변화는 같은 번호', '첫 칸의 점은 조각의 시작 표시'], draw: () => ({ W, H: top(3) - 10, items: rows('both') }) },
-      { title: '키가 달라도 같은 노래는 같은 기호', desc: 'A와 C는 음 높이가 달라도 번호가 모두 같음. 이후 비교는 원래 음 대신 이 번호로만 진행.', draw: () => ({ W, H: PY + 3 * 52, items: rows('tiles') }) }
+      { title: '키가 달라도 같은 노래는 같은 기호', desc: 'A와 C는 음 높이가 달라도 번호가 모두 같음. 이후 비교는 원래 음 대신 이 번호로만 진행.', draw: () => ({ W, H: PY + 3 * 52, items: rows('tiles') }) },
+      { title: '원곡을 배열 하나로 이어 붙이고 곡 끝마다 구분 칸 0', desc: ['실제 코드는 원곡 전체를 배열 하나에 저장, 그림은 곡마다 줄을 바꿔 표시', '위 숫자 = 배열 안 위치 번호, 곡마다 이어서 증가', '곡 끝 구분 칸 0은 어떤 번호와도 같지 않아 비교가 다음 곡으로 넘어가지 않음', '이후 조각은 시작 위치 번호 하나로 표시'], draw: () => ({ W: X + 8 * CW + PX, H: PY + 3 * 72, items: allRows(M.songs, X, k => PY + 18 + k * 72) }) }
     ]
   };
+}
+// 원곡 전체 배열: 곡마다 한 줄, 위치 번호 + 변화 번호 + 끝 구분 칸 (세 방식 공통)
+function allRows(songs, X, y, o = {}) {
+  const it = [];
+  songs.forEach((m, k) => {
+    const n = m.notes.length;
+    it.push({ id: 'lab-' + m.tag, x: PX, y: y(k), html: labHTML(m) });
+    it.push({ id: 'ix-' + m.tag, x: X, y: y(k) - 18, html: idxHTML(m.base, n + 1) });
+    it.push({ id: 'tl-' + m.tag, x: X, y: y(k), html: tilesHTML(m, 0, n, { sep: true, ...(o.tiles ? o.tiles(m) : {}) }) });
+  });
+  return it;
 }
 // 결과 (세 방식 공통)
 function resultStep(M) {
@@ -306,5 +336,5 @@ function startPage(cfg) {
   render();
 }
 
-Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, START_REST, makeLetters, plen, letter, common, less, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, bigOStep, codeStep, startPage });
+Object.assign(window, { SONGS, CW, RH, LBL, PX, PY, START_NOTE, START_REST, SEP, UNSEEN, makeDict, symHTML, sepHTML, idxHTML, pname, allRows, makeLetters, plen, letter, common, less, hashOf, buildModel, esc, chip, labHTML, contourHTML, tilesHTML, pieceHTML, changeStep, resultStep, costStep, bigOStep, codeStep, startPage });
 }
