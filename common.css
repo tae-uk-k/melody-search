@@ -228,3 +228,24 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 @media(max-width:600px){.ex .pre,.ex pre{padding:12px 10px}.doc section{padding:20px 18px}}
 @media(min-width:960px){.cta{left:248px}.tt{padding-top:36px}}
 @media(prefers-reduced-motion:reduce){.it,.tl,.prog i,.box,.mx b{transition:none!important}}
+
+/* 순차 배열: 반복 순서 표시 */
+.loop{display:flex;align-items:center;gap:6px}
+.loop .k{margin:0 6px 0 18px;font-size:15px;font-weight:600;color:var(--sub)}
+.loop .k:first-child{margin-left:0}
+.chip.done{background:var(--blue-weak);color:var(--blue-ink)}
+.cap.mk{display:block;text-align:center;font-size:14px;color:var(--blue-ink);font-weight:700}
+.cap.rt{display:block;text-align:right}
+.note.hit{color:var(--blue-ink);font-weight:700}
+
+/* 문제 정의: 변화량 그림 */
+.chg{display:grid;grid-template-columns:96px repeat(7,72px);gap:6px;margin:14px 0 16px}
+.chg .nm{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:6px;font-size:15px;font-weight:700}
+.chg .nm:first-child{margin-top:0}
+.chg .k{align-self:center;font-size:13.5px;font-weight:600;color:var(--sub)}
+.chg svg{grid-column:2/-1;display:block}
+.chg rect{fill:var(--sub)}
+.chg .v{height:32px;border-radius:8px;background:var(--fill);display:grid;place-items:center;font:500 14px "JetBrains Mono",ui-monospace,Consolas,monospace;font-variant-ligatures:none}
+.chg .v.c{background:var(--blue-weak);color:var(--blue-ink);font-weight:600}
+.chg .v.s{background:none;color:var(--mute);font-family:inherit;font-size:13.5px;font-weight:600}
+.chg .ok{grid-column:1/-1;margin:8px 0 0;padding:12px 16px;border-radius:12px;background:var(--blue-weak);color:var(--blue-ink);font-size:15px;font-weight:700}

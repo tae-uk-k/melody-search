@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=9">
+<link rel="stylesheet" href="common.css?v=10">
 </head>
 <body>
 <div class="app">
@@ -32,6 +32,10 @@
       <li>같은 위치끼리 길이 비율이 구간 전체에서 일정함. 빠르기 변경 허용.</li>
     </ol>
     <p>구간 길이는 음과 쉼의 개수. 쉼도 한 칸.</p>
+    <h3>음 높이 대신 변화량으로 비교</h3>
+    <p>음마다 바로 앞 음과의 높이 변화, 길이 비율만 봄. 키를 올리거나 느리게 불러도 변화량은 그대로라 같은 멜로디로 판정.</p>
+    <div class="chg" id="chg" role="img" aria-label="반짝반짝 작은 별과 입력 2~8번째 음의 변화량 비교"></div>
+    <p>정렬 배열과 체이닝 해시는 이 변화량을 번호 하나로 바꿔 미리 저장. 순차 배열은 저장 없이 비교할 때마다 계산.</p>
   </section>
 
   <section id="input">
@@ -115,6 +119,32 @@ ABC 노래
 </div>
 </div>
 <script>
+{
+  // 변화량 그림: 위 = 음 높이(세로)와 길이(막대 너비), 아래 = 앞 음 대비 변화량
+  const MEL = [
+    { name: '반짝반짝 작은 별', tag: 'A', notes: [[60, 2], [60, 2], [67, 2], [67, 2], [69, 2], [69, 2], [67, 4]] },
+    { name: '입력 2~8번째 음', tag: 'Q', notes: [[67, 4], [67, 4], [74, 4], [74, 4], [76, 4], [76, 4], [74, 8]] }
+  ];
+  const CWD = 72, GAP = 6, HI = 76, LO = 60, DMAX = 8, RH = 4;
+  const sign = v => v > 0 ? '+' + v : v < 0 ? '−' + -v : '0';
+  const gcd = (a, b) => { while (b) [a, b] = [b, a % b]; return a; };
+  const ratio = (a, b) => { const g = gcd(a, b), n = a / g, d = b / g; return d === 1 ? '×' + n : '×' + n + '/' + d; };
+  let h = '';
+  MEL.forEach(m => {
+    const W = 7 * CWD + 6 * GAP, H = (HI - LO) * RH + 16;
+    const bars = m.notes.map(([p, d], k) => {
+      const w = d / DMAX * (CWD - 8), cx = k * (CWD + GAP) + CWD / 2;
+      return `<rect x="${cx - w / 2}" y="${(HI - p) * RH + 4}" width="${w}" height="8" rx="4"/>`;
+    }).join('');
+    h += `<div class="nm"><span class="chip ${m.tag === 'Q' ? 'q' : ''}">${m.tag}</span>${m.name}</div>`;
+    h += `<span class="k">음</span><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">${bars}</svg>`;
+    h += `<span class="k">높이 길이</span>` + m.notes.map(([p, d]) => `<span class="v">${p} ${d}</span>`).join('');
+    h += `<span class="k">높이 변화</span>` + m.notes.map(([p], k) => k ? `<span class="v c">${sign(p - m.notes[k - 1][0])}</span>` : '<span class="v s">시작</span>').join('');
+    h += `<span class="k">길이 비율</span>` + m.notes.map(([, d], k) => k ? `<span class="v c">${ratio(d, m.notes[k - 1][1])}</span>` : '<span class="v s">시작</span>').join('');
+  });
+  h += '<p class="ok">높이 변화와 길이 비율이 칸마다 모두 같음 → 같은 멜로디 (키 +7, 길이 2배)</p>';
+  document.getElementById('chg').innerHTML = h;
+}
 {
   // 읽는 중인 절을 왼쪽 목차에 표시
   const links = [...document.querySelectorAll('#toc a')];
