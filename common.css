@@ -28,8 +28,8 @@ a{color:inherit;text-decoration:none}
 .side{max-width:960px;margin:0 auto;padding:16px max(3vw,16px) 0}
 .brand{display:none}
 .logo{flex:none;width:24px;height:24px;fill:var(--blue)}
-.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px;border-radius:14px;background:var(--fill)}
-.tabs a{height:44px;border-radius:11px;display:grid;place-items:center;font-size:15px;font-weight:600;color:var(--mute);white-space:nowrap}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:4px;border-radius:14px;background:var(--fill)}
+.tabs a{height:44px;border-radius:11px;display:grid;place-items:center;font-size:14px;font-weight:600;color:var(--mute);white-space:nowrap}
 .tabs a[aria-current=page]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0/.08)}
 .tabs a:hover:not([aria-current]){color:var(--ink)}
 .steps{display:flex;flex-wrap:wrap;gap:10px 20px;padding:16px 2px 4px}

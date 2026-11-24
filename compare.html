@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>최장 멜로디 검색: 비교</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css?v=8">
+<style>
+/* 비교 페이지 전용 */
+.lead{margin:-8px 0 20px;font-size:16px;color:var(--sub)}
+.fig{margin:6px 0 14px;overflow-x:auto}
+.fig .cap{margin:0 0 6px;font-size:14px;font-weight:700;color:var(--mute)}
+.chart{display:block;width:100%;min-width:560px;height:auto}
+.chart text{font:600 13px "IBM Plex Sans KR",sans-serif;fill:var(--mute)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--line);stroke-width:1.5}
+.chart .ser{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.chart .dot{stroke:var(--card);stroke-width:2}
+.chart .t-blue{stroke:var(--blue);fill:var(--blue)}
+.chart .t-ink{stroke:var(--ink);fill:var(--ink)}
+.chart .t-mute{stroke:var(--mute);fill:var(--mute)}
+.chart .ser.t-blue,.chart .ser.t-ink,.chart .ser.t-mute{fill:none}
+.chart .dash{stroke-dasharray:6 6;stroke-width:2}
+.chart .shade{fill:var(--fill)}
+.chart .lbl{font-size:14px;font-weight:700}
+.chart .lbl.t-blue{fill:var(--blue-ink);stroke:none}
+.chart .lbl.t-ink{fill:var(--ink);stroke:none}
+.chart .lbl.t-mute{fill:var(--mute);stroke:none}
+.chart .note{font-size:13px;font-weight:700;fill:var(--sub)}
+.tbl{width:100%;border-collapse:collapse;font-size:16px}
+.tbl th,.tbl td{height:52px;padding:0 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th{font-size:14px;font-weight:700;color:var(--mute)}
+.tbl td:first-child,.tbl th:first-child{text-align:left;color:var(--sub);font-weight:600}
+.tbl td{font-weight:700}
+.tbl td.best span{display:inline-block;padding:4px 12px;border-radius:10px;background:var(--blue-weak);color:var(--blue-ink)}
+.tbl td.cap{height:40px;font-size:14px;color:var(--mute)}
+.tbl tr:last-child td{border-bottom:0}
+.hb{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px 14px;margin:4px 0 14px}
+.hb .k{font-size:15px;font-weight:600;color:var(--sub)}
+.hb .tr{height:30px;border-radius:9px;background:var(--fill);overflow:hidden}
+.hb .tr i{display:block;height:100%;border-radius:9px;background:var(--sub)}
+.hb .tr i.on{background:var(--blue)}
+.hb .v{font-size:17px;font-weight:700;text-align:right}
+.pick{display:grid;gap:8px;margin:6px 0 4px}
+.pick div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px;padding:14px 18px;border-radius:14px;background:var(--fill)}
+.pick p{margin:0!important;font-size:15px!important;color:var(--sub)}
+.pick b{font-size:16px}
+.pick div.on{background:var(--blue-weak)}
+.pick div.on b{color:var(--blue-ink)}
+.hyp{display:grid;gap:8px;margin:6px 0 10px}
+.hyp div{padding:14px 18px;border-radius:14px;background:var(--fill)}
+.hyp b{display:block;font-size:16px}
+.hyp p{margin:2px 0 0!important;font-size:15px!important;color:var(--sub)}
+.why{display:grid;gap:8px;margin:6px 0 14px}
+.why div{padding:14px 18px;border-radius:14px;background:var(--fill)}
+.why div>b{display:block;margin-bottom:4px;font-size:16px}
+.why p{margin:4px 0 0!important;font-size:15px!important;line-height:1.65!important;color:var(--sub)}
+.why i{font-style:normal;font-weight:700;color:var(--ink);margin-right:6px}
+.wait{display:inline-flex;align-items:center;height:26px;margin-left:8px;padding:0 10px;border-radius:8px;background:var(--fill);font-size:13px;font-weight:700;color:var(--mute);vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <p class="brand"><svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6.6" cy="18.2" rx="3.7" ry="2.8" transform="rotate(-20 6.6 18.2)"/><ellipse cx="18" cy="16.2" rx="3.7" ry="2.8" transform="rotate(-20 18 16.2)"/><rect x="9.2" y="5.2" width="1.9" height="13"/><rect x="20.6" y="3.2" width="1.9" height="13"/><path d="M9.2 5.2 22.5 2.6v3.4L9.2 8.6z"/></svg>최장 멜로디 검색</p>
+  <nav class="tabs" aria-label="페이지"><a href="index.html">문제 정의</a><a href="linear.html">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html">체이닝 해시</a><a href="compare.html" aria-current="page">비교</a></nav>
+  <nav class="steps" aria-label="목차"><div class="grp"><div class="pills" id="toc">
+    <a href="#summary">결론</a><a href="#search-in">검색: 있는 곡</a><a href="#search-out">검색: 없는 곡</a><a href="#build">구축 시간</a><a href="#memory">메모리</a><a href="#choice">어떤 걸 고를까</a><a href="#lang">C++ vs Python</a>
+  </div></div></nav>
+</aside>
+<div class="content">
+<main class="doc">
+  <h1>세 방식 비교</h1>
+  <p class="lead">C++ 실측값. 데이터 1천~100만 항목, 입력 16칸, 반복 측정 중앙값.</p>
+
+  <section id="summary">
+    <h2>결론: 검색은 <mark>체이닝 해시</mark>, 메모리는 <mark>정렬 배열</mark>이 유리</h2>
+    <div class="fig" id="f-summary"></div>
+    <ul>
+      <li>DB에 있는 곡을 찾으면 해시가 데이터 크기와 상관없이 항상 가장 빠름. 100만 항목에서 순차 배열보다 약 <b>33만 배</b>.</li>
+      <li>DB에 없는 곡을 작은 데이터(1천~5천 항목)에서 찾으면 <b>정렬 배열이 더 빠름</b>.</li>
+      <li>해시는 정렬 배열보다 구축이 약 <b>3.6배</b> 느리고 메모리를 약 <b>65배</b> 사용.</li>
+      <li>그래서 대부분의 상황에서는 정렬 배열이 가장 균형 잡힌 선택.</li>
+    </ul>
+  </section>
+
+  <section id="search-in">
+    <h2>검색 ①: DB에 있는 곡을 입력할 때</h2>
+    <p>DB에 있는 곡에서 16칸을 그대로 잘라 입력. 답은 항상 16칸 전체 일치.</p>
+
+    <h3>결과: 해시가 모든 크기에서 가장 빠름</h3>
+    <div class="fig" id="f-search"></div>
+    <ul>
+      <li>세로축은 10배씩 커지는 로그 눈금.</li>
+      <li>100만 항목에서 순차 배열 522ms, 정렬 배열 10µs, 해시 1.6µs.</li>
+      <li>조옮김·길이 2배·가운데 음 하나 변경을 한 <b>변형 구절</b>도 같은 모양. 100만 항목에서 정렬 배열 8.9µs, 해시 1.1µs.</li>
+    </ul>
+
+    <h3>왜 이렇게 나왔나</h3>
+    <div class="why">
+      <div><b>순차 배열: 데이터에 정비례 <mark>O(N)</mark></b>
+        <p><i>하는 일</i> 입력 16개 시작 위치 × DB의 모든 시작 위치를 하나씩 짝지어 비교.</p>
+        <p><i>그래서</i> 100만 항목이면 16 × 100만 = 1,600만 쌍. 데이터가 1,000배면 비교도 1,000배라 그래프가 곧은 오르막(실측 약 860배).</p></div>
+      <div><b>정렬 배열: 조금씩 증가 <mark>O(log N)</mark></b>
+        <p><i>하는 일</i> 입력 조각 16개마다 정렬된 배열에서 들어갈 자리를 이진 탐색. 그 자리의 위·아래 이웃만 비교.</p>
+        <p><i>그래서</i> 이진 탐색 횟수는 1천 항목에서 약 10번, 100만 항목에서 약 20번. 데이터가 1,000배 늘어도 일은 2배 정도만 늘어남.</p></div>
+      <div><b>체이닝 해시: 거의 일정 <mark>O(1)</mark></b>
+        <p><i>하는 일</i> 길이를 8 → 12 → 14 → 15 → 16 순서로 좁히며 "이 길이로 일치하는 조각이 있나?"를 해시표에 물어봄. 칸 번호를 계산해 바로 찾아감.</p>
+        <p><i>그래서</i> 있는 곡은 매번 "있음"이라 첫 일치에서 바로 다음 길이로 넘어감. 질문 5번 × 칸 몇 개 확인이 전부라 데이터 크기와 상관없음.</p></div>
+    </div>
+
+    <h3>이론과 실측이 갈라지는 곳: 정렬 배열</h3>
+    <div class="fig" id="f-theory"></div>
+    <ul>
+      <li>점선은 1천~2만 항목 결과로 그린 O(log N) 예측선. 20만 항목까지는 실측이 예측선을 따라감.</li>
+      <li>50만 항목부터 예측보다 2배 이상 느림. 100만 항목에서 예측 약 4.4µs, 실측 10.0µs.</li>
+      <li>원인: 데이터와 색인을 합친 크기가 CPU의 <mark>L3 캐시</mark>(24MB)를 넘음. 이진 탐색은 멀리 떨어진 칸을 건너뛰며 읽어서, 캐시에 없으면 느린 메인 메모리까지 다녀와야 함.</li>
+      <li>해시는 같은 구간에서도 평평함. 칸 몇 개만 읽어서 캐시 밖에 있어도 영향이 작음.</li>
+      <li>Big-O는 비교 횟수만 세고, 데이터가 메모리 어디에 있는지는 고려하지 않음.</li>
+    </ul>
+  </section>
+
+  <section id="search-out">
+    <h2>검색 ②: DB에 없는 곡을 입력할 때</h2>
+    <p>DB에 없는 곡에서 16칸을 입력. 16칸 전체가 맞는 곡은 없고, 짧게 겹치는 곡만 있음.</p>
+
+    <h3>결과: 작은 데이터에서는 정렬 배열이 더 빠름</h3>
+    <div class="fig" id="f-miss"></div>
+    <ul>
+      <li>1천~5천 항목: 해시 39~88µs, 정렬 배열 22~30µs. <b>정렬 배열이 최대 3배 빠름</b>.</li>
+      <li>1만 항목부터는 두 방식이 4~37µs로 비슷하게 움직임.</li>
+      <li>두 방식 모두 있는 곡(1~10µs)보다 느리고, 데이터가 작을 때 오히려 더 느림.</li>
+    </ul>
+
+    <h3>왜 데이터가 작을수록 느릴까: 확인할 후보가 많음</h3>
+    <div class="fig" id="f-pairs"></div>
+    <ul>
+      <li>데이터가 작으면 가장 길게 겹치는 부분이 평균 2칸 정도로 짧음.</li>
+      <li>"음 → 쉼"처럼 2칸짜리 멜로디는 여러 곡에 흔함. 그래서 최장 길이로 겹친 후보가 1천 항목에서 질의 하나에 2,095개.</li>
+      <li>답에는 겹친 곡을 모두 적어야 해서 후보를 전부 확인해야 함. 1만 항목부터는 더 길게 겹치는 곳이 생겨 후보가 50~300개로 줄어듦.</li>
+    </ul>
+
+    <h3>왜 해시가 정렬 배열보다 느릴까</h3>
+    <div class="why">
+      <div><b>① "없음" 답은 끝까지 확인해야 함</b>
+        <p>해시는 길이를 바꿔 가며 "이 길이로 일치하는 조각이 있나?"를 물어봄. "있음"은 첫 일치에서 바로 멈추지만, "없음"은 입력 조각을 전부 다 찾아봐야 확정.</p>
+        <p>있는 곡은 답이 16이라 질문이 모두 "있음". 없는 곡은 답이 2~4라 8칸, 4칸, 3칸 질문이 "없음"이 되어 매번 끝까지 확인.</p></div>
+      <div><b>② 후보 하나를 확인하는 일이 더 많음</b>
+        <p>해시는 해시값이 같은 후보를 원래 음높이·길이로 다시 비교해 진짜 일치인지 확인(길이 비율 계산 포함).</p>
+        <p>정렬 배열은 이미 만들어 둔 변화 글자 번호를 2개 정도만 비교하면 됨. 후보 2,000개면 이 차이가 그대로 쌓임.</p></div>
+      <div><b>③ 정렬 배열은 후보가 한곳에 모여 있음</b>
+        <p>정렬 배열에서는 앞부분이 같은 조각끼리 붙어 있어서, 들어갈 자리에서 위·아래로 쭉 읽으면 후보를 다 모음.</p>
+        <p>해시도 같은 칸에 모이지만, 칸을 찾고 체인을 따라가는 과정이 길이마다 반복됨.</p></div>
+    </div>
+  </section>
+
+  <section id="build">
+    <h2>구축 시간</h2>
+
+    <h3>이론은 해시가 빨라야 하는데, 실제는 정렬 배열이 3.6배 빠름</h3>
+    <div class="fig" id="f-build"></div>
+    <ul>
+      <li>이론상 정렬 배열 구축은 <mark>O(N log N)</mark>, 해시는 <mark>O(N)</mark>. 해시가 더 빨라야 함.</li>
+      <li>100만 항목에서 실측은 정렬 배열 429ms, 해시 1,565ms.</li>
+    </ul>
+
+    <h3>왜 이렇게 나왔나</h3>
+    <div class="why">
+      <div><b>정렬 배열: 시작 위치 하나에 조각 1개</b>
+        <p><i>하는 일</i> 모든 시작 위치를 (블록 번호, 시작 위치)로 배열에 넣고, 변화 글자 순서로 정렬.</p>
+        <p><i>그래서</i> 비교 횟수는 약 N × log₂N. 100만 항목이면 log₂N ≈ 20이라 위치 하나당 비교 약 20번. 비교도 대부분 앞 글자 몇 개에서 결판남.</p></div>
+      <div><b>체이닝 해시: 시작 위치 하나에 조각 32개</b>
+        <p><i>하는 일</i> 시작 위치마다 길이 1~32 조각의 해시값을 계산해 길이별 해시표 32개에 하나씩 넣음.</p>
+        <p><i>그래서</i> 위치 하나당 저장 32번. Big-O에서는 상수라 지워지지만 실제로는 <b>32 &gt; 20</b>. 100만 항목 정도에서는 log N보다 상수 32가 더 큼.</p></div>
+      <div><b>메모리 접근 방식 차이</b>
+        <p>해시는 해시값에 따라 표의 아무 칸에나 써야 해서 매번 메모리 여기저기를 건드림(캐시 미스).</p>
+        <p>정렬 배열은 작은 배열 하나 안에서 자리만 바꿔서 캐시에 잘 들어감.</p></div>
+    </div>
+
+    <h3>항목 1개당 구축 시간: 해시는 캐시를 넘는 순간부터 증가</h3>
+    <div class="fig" id="f-peritem"></div>
+    <ul>
+      <li>항목 수로 나눈 구축 시간. 이론상 O(N)이면 수평선이어야 함.</li>
+      <li>해시는 1만 항목까지 항목당 약 0.4µs로 수평. 5만 항목 근처에서 색인이 L3 캐시를 넘으면서 100만 항목에서 1.6µs로 4배 증가.</li>
+      <li>정렬 배열은 log N만큼 천천히 늘어 0.1µs에서 0.4µs.</li>
+    </ul>
+  </section>
+
+  <section id="memory">
+    <h2>메모리</h2>
+
+    <h3>100만 항목에서 해시 색인은 정렬 배열의 약 65배</h3>
+    <div class="fig" id="f-mem"></div>
+    <ul>
+      <li>정렬 배열은 시작 위치마다 (블록 번호, 시작 위치) 하나만 저장. 조각 내용은 복사하지 않아서 항목당 8~14바이트.</li>
+      <li>해시는 시작 위치마다 조각 32개를 저장하고, 조각마다 해시값(8바이트)과 위치(4바이트)를 넣음. 12바이트 × 32개 ≈ 384바이트에 칸 시작 위치 표까지 더해 항목당 약 550바이트.</li>
+    </ul>
+
+    <h3><mark>치명적 맹점</mark>: 전체 데이터면 해시 색인 16.7GB</h3>
+    <div class="fig" id="f-full"></div>
+    <ul>
+      <li>전체 3,048만 항목을 해시로 올리면 실험 PC 메모리(3.9GB)의 4배가 필요. 그래서 100만 항목까지만 실험.</li>
+      <li>보완책: 검사할 길이의 조각만 그때그때 저장. 메모리는 1/32 수준이 되지만 검색마다 색인을 다시 만들어야 해서 검색이 느려짐.</li>
+    </ul>
+  </section>
+
+  <section id="choice">
+    <h2>어떤 걸 고를까</h2>
+
+    <h3>준비 시간까지 합치면 언제 해시가 이득일까</h3>
+    <div class="fig" id="f-break"></div>
+    <ul id="break-text"></ul>
+
+    <h3>상황에 맞는 선택</h3>
+    <div class="pick" id="f-pick"></div>
+    <p>가장 빠른 자료구조가 항상 가장 좋은 선택은 아님. 검색 횟수와 메모리 여유에 따라 달라짐.</p>
+  </section>
+
+  <section id="lang">
+    <h2 id="lang-title"></h2>
+    <div id="f-lang"></div>
+  </section>
+</main>
+</div>
+</div>
+<script>
+{
+// ---------- 실험 결과 (C++, 노션 "C++ 성능 실험 결과" 표, 반복 측정 중앙값) ----------
+const N = [1e3, 2e3, 5e3, 1e4, 2e4, 5e4, 1e5, 2e5, 5e5, 1e6];   // 데이터 크기 (항목 수)
+const SEARCH = {                                                   // 질의 1개 검색 시간 (µs), 수록곡
+  linear: [605, 1204, 2876, 5385, 10303, 25357, 49211, 100176, 256091, 522433],
+  sorted: [1.95, 2.11, 2.38, 2.83, 2.97, 3.52, 3.90, 5.04, 9.74, 10.0],
+  hash:   [1.66, 1.20, 1.18, 1.51, 1.37, 1.45, 1.43, 1.46, 1.43, 1.59]
+};
+const MISSING = {                                                  // 미수록곡 (DB에 없는 곡)
+  sorted: [29.8, 28.7, 21.8, 3.85, 7.30, 10.0, 11.2, 14.1, 26.6, 36.7],
+  hash:   [87.7, 78.5, 38.7, 3.99, 9.66, 9.73, 13.0, 12.9, 22.2, 27.3],
+  pairs:  [2095, 1942, 836, 50.6, 130, 147, 134, 141, 241, 299]    // 최장 길이로 일치한 조각 쌍 수 (질의당)
+};
+const BUILD = {                                                    // 색인 구축 시간 (ms)
+  sorted: [0.115, 0.252, 0.708, 1.50, 3.28, 9.40, 20.0, 49.1, 163, 429],
+  hash:   [0.398, 0.781, 1.84, 3.85, 10.4, 29.5, 77.9, 213, 737, 1565]
+};
+const MEM = {                                                      // 색인 힙 메모리 (MB)
+  sorted: [0.0082, 0.016, 0.066, 0.135, 0.266, 0.528, 1.05, 2.10, 4.20, 8.39],
+  hash:   [0.571, 1.16, 2.75, 5.56, 11.0, 27.5, 54.8, 109, 274, 546]
+};
+const FULL_HASH_GB = 16.7, RAM_GB = 3.9;   // 전체 데이터(3,048만 항목) 해시 예상 메모리, 실험 PC 메모리
+
+// ---------- Python 측정값: 측정 후 여기에 숫자만 채우기 ----------
+// 같은 PC, 같은 데이터. n은 Python으로 돌린 데이터 크기. 측정 전에는 null로 두면 가설이 나옴.
+const PY = null;
+// 예: const PY = { n: '10만 항목',
+//   search: { linear: [49211, 0], sorted: [3.90, 0], hash: [1.43, 0] },   // [C++ µs, Python µs]
+//   build:  { sorted: [20.0, 0], hash: [77.9, 0] },                       // [C++ ms, Python ms]
+//   mem:    { sorted: [1.05, 0], hash: [54.8, 0] } };                     // [C++ MB, Python MB]
+
+const NAME = { linear: '순차 배열', sorted: '정렬 배열', hash: '체이닝 해시' };
+const TONE = { linear: 'mute', sorted: 'ink', hash: 'blue' };
+const last = a => a[a.length - 1];
+const $ = id => document.getElementById(id);
+
+// ---------- 숫자 표시 ----------
+const fmtUs = v => v >= 1e6 ? (v / 1e6).toFixed(1) + '초' : v >= 1000 ? (v / 1000 >= 100 ? Math.round(v / 1000) : (v / 1000).toFixed(1)) + 'ms' : (v >= 10 ? Math.round(v) : v.toFixed(1)) + 'µs';
+const fmtMs = v => v >= 1000 ? (v / 1000).toFixed(1) + '초' : (v >= 10 ? Math.round(v) : v.toFixed(1)) + 'ms';
+const fmtMB = v => v >= 1000 ? (v / 1000).toFixed(1) + 'GB' : (v >= 10 ? Math.round(v) : v.toFixed(1)) + 'MB';
+const comma = v => Math.round(v).toLocaleString('ko-KR');
+const tenK = v => v >= 1e4 ? '약 ' + (v / 1e4).toFixed(1) + '만' : comma(v);
+
+// ---------- 꺾은선 그래프 (SVG). x축은 로그 눈금 ----------
+function chart(o) {
+  const w = 728, h = o.h || 320, L = 70, R = 118, T = 18, B = 40;
+  const lx = Math.log10;
+  const x0 = lx(o.xs[0]), x1 = lx(last(o.xs));
+  const X = v => L + (lx(v) - x0) / (x1 - x0) * (w - L - R);
+  const Y = o.ylog
+    ? v => T + (1 - (lx(v) - lx(o.ymin)) / (lx(o.ymax) - lx(o.ymin))) * (h - T - B)
+    : v => T + (1 - (v - o.ymin) / (o.ymax - o.ymin)) * (h - T - B);
+  let s = `<svg class="chart" viewBox="0 0 ${w} ${h}">`;
+  if (o.band) {
+    const bx = X(o.band.from), ex = X(o.band.to);
+    s += `<rect class="shade" x="${bx}" y="${T}" width="${ex - bx}" height="${h - T - B}" rx="6"/>`;
+    s += `<text class="note" x="${bx + 8}" y="${T + 20}">${o.band.text}</text>`;
+  }
+  if (o.shade) {
+    const sx = X(o.shade.from);
+    s += `<rect class="shade" x="${sx}" y="${T}" width="${w - R - sx}" height="${h - T - B}" rx="6"/>`;
+    s += `<text class="note" x="${sx + 8}" y="${T + 20}">${o.shade.text}</text>`;
+  }
+  for (const [v, t] of o.yticks) s += `<line class="grid" x1="${L}" x2="${w - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 10}" y="${Y(v) + 4}" text-anchor="end">${t}</text>`;
+  for (const [v, t] of o.xticks) s += `<text x="${X(v)}" y="${h - B + 24}" text-anchor="middle">${t}</text>`;
+  s += `<line class="axis" x1="${L}" x2="${w - R}" y1="${h - B}" y2="${h - B}"/>`;
+  for (const se of o.series) {
+    const pts = se.v.map((v, k) => [X(o.xs[k]), Y(v)]);
+    s += `<path class="ser t-${se.tone} ${se.dash ? 'dash' : ''}" d="M${pts.map(p => p.map(n => n.toFixed(1)).join(' ')).join(' L')}"/>`;
+    if (se.dots !== false) for (const [px, py] of pts) s += `<circle class="dot t-${se.tone}" cx="${px}" cy="${py}" r="4.5"/>`;
+    const [px, py] = last(pts);
+    s += `<text class="lbl t-${se.tone}" x="${px + 12}" y="${py + 5 + (se.ly || 0)}">${se.label}</text>`;
+  }
+  for (const m of o.marks || []) {
+    const px = X(m.x), py = Y(m.y);
+    s += `<circle class="dot t-${m.tone}" cx="${px}" cy="${py}" r="7"/>`;
+    s += `<text class="lbl t-${m.tone}" x="${px}" y="${py - 16}" text-anchor="middle">${m.text}</text>`;
+  }
+  return s + '</svg>';
+}
+const NTICKS = [[1e3, '1천'], [1e4, '1만'], [1e5, '10만'], [1e6, '100만']];
+const fig = (id, cap, html) => { $(id).innerHTML = (cap ? `<p class="cap">${cap}</p>` : '') + html; };
+
+// 가로 막대
+const bars = rows => {
+  const max = Math.max(...rows.map(r => r[1]));
+  return `<div class="hb">${rows.map(([k, v, on, fmt]) =>
+    `<span class="k">${k}</span><span class="tr"><i class="${on ? 'on' : ''}" style="width:${Math.max(v / max * 100, 1)}%"></i></span><span class="v">${fmt(v)}</span>`).join('')}</div>`;
+};
+
+// ---------- 결론 표 ----------
+fig('f-summary', '', `<table class="tbl">
+  <tr><th>100만 항목</th><th>순차 배열</th><th>정렬 배열</th><th>체이닝 해시</th></tr>
+  <tr><td>검색 1번</td><td>${fmtUs(last(SEARCH.linear))}</td><td>${fmtUs(last(SEARCH.sorted))}</td><td class="best"><span>${fmtUs(last(SEARCH.hash))}</span></td></tr>
+  <tr><td>미리 준비 (구축)</td><td class="best"><span>없음</span></td><td>${fmtMs(last(BUILD.sorted))}</td><td>${fmtMs(last(BUILD.hash))}</td></tr>
+  <tr><td>색인 메모리</td><td class="best"><span>없음</span></td><td>${fmtMB(last(MEM.sorted))}</td><td>${fmtMB(last(MEM.hash))}</td></tr>
+</table>`);
+
+// ---------- 검색: 데이터 증가 ----------
+fig('f-search', '질의 1개 검색 시간 (로그 눈금)', chart({
+  xs: N, xticks: NTICKS, ylog: true, ymin: 0.7, ymax: 1.2e6,
+  yticks: [[1, '1µs'], [10, '10µs'], [100, '100µs'], [1e3, '1ms'], [1e4, '10ms'], [1e5, '100ms'], [1e6, '1초']],
+  series: ['linear', 'sorted', 'hash'].map(k => ({ v: SEARCH[k], tone: TONE[k], label: NAME[k], ly: k === 'sorted' ? -6 : k === 'hash' ? 8 : 0 }))
+}));
+
+// ---------- 검색: 이론과 실측 ----------
+// 1천~2만 다섯 점으로 a + b·log10(N)을 맞춘 뒤 100만까지 연장 = O(log N) 예측선
+const fit = (() => {
+  const xs = N.slice(0, 5).map(Math.log10), ys = SEARCH.sorted.slice(0, 5);
+  const mx = xs.reduce((a, b) => a + b) / 5, my = ys.reduce((a, b) => a + b) / 5;
+  const b = xs.reduce((s, x, k) => s + (x - mx) * (ys[k] - my), 0) / xs.reduce((s, x) => s + (x - mx) ** 2, 0);
+  return N.map(n => my + b * (Math.log10(n) - mx));
+})();
+fig('f-theory', '정렬 배열 검색 시간: 예측과 실측', chart({
+  xs: N, xticks: NTICKS, ymin: 0, ymax: 12,
+  yticks: [[0, '0µs'], [2, '2µs'], [4, '4µs'], [6, '6µs'], [8, '8µs'], [10, '10µs'], [12, '12µs']],
+  shade: { from: 5e5, text: 'L3 캐시 24MB 초과' },
+  series: [{ v: fit, tone: 'mute', dash: true, dots: false, label: '예측 O(log N)' }, { v: SEARCH.sorted, tone: 'blue', label: '정렬 배열 실측', ly: -4 }]
+}));
+
+// ---------- 검색: 없는 곡 ----------
+fig('f-miss', 'DB에 없는 곡의 검색 시간', chart({
+  xs: N, xticks: NTICKS, ymin: 0, ymax: 100, h: 280,
+  band: { from: 1e3, to: 7e3, text: '정렬 배열이 빠른 구간' },
+  yticks: [[0, '0µs'], [20, '20µs'], [40, '40µs'], [60, '60µs'], [80, '80µs'], [100, '100µs']],
+  series: [{ v: MISSING.hash, tone: 'blue', label: '체이닝 해시', ly: 10 }, { v: MISSING.sorted, tone: 'ink', label: '정렬 배열', ly: -4 }]
+}));
+fig('f-pairs', '질의 하나에서 확인해야 하는 후보 수', chart({
+  xs: N, xticks: NTICKS, ymin: 0, ymax: 2500, h: 240,
+  yticks: [[0, '0'], [1000, '1,000'], [2000, '2,000']],
+  series: [{ v: MISSING.pairs, tone: 'ink', label: '확인할 후보' }]
+}));
+
+// ---------- 구축 시간 ----------
+fig('f-build', '100만 항목 색인 구축 시간', bars([['정렬 배열', last(BUILD.sorted), true, fmtMs], ['체이닝 해시', last(BUILD.hash), false, fmtMs]]));
+fig('f-peritem', '', chart({
+  xs: N, xticks: NTICKS, ymin: 0, ymax: 2, h: 280,
+  yticks: [[0, '0µs'], [0.5, '0.5µs'], [1, '1µs'], [1.5, '1.5µs'], [2, '2µs']],
+  shade: { from: 5e4, text: '해시 색인 L3 캐시 초과' },
+  series: [
+    { v: BUILD.hash.map((v, k) => v * 1000 / N[k]), tone: 'blue', label: '체이닝 해시' },
+    { v: BUILD.sorted.map((v, k) => v * 1000 / N[k]), tone: 'ink', label: '정렬 배열' }
+  ]
+}));
+
+// ---------- 메모리 ----------
+fig('f-mem', '100만 항목 색인 메모리', bars([['정렬 배열', last(MEM.sorted), true, fmtMB], ['체이닝 해시', last(MEM.hash), false, fmtMB]]));
+fig('f-full', '전체 데이터 3,048만 항목을 체이닝 해시로 올리면', bars([['실험 PC 메모리', RAM_GB * 1000, true, fmtMB], ['해시 색인 예상', FULL_HASH_GB * 1000, false, fmtMB]]));
+
+// ---------- 언제 해시가 본전을 뽑나 ----------
+// 총 시간 = 구축 + 검색 횟수 × 검색 1번 (ms), 100만 항목
+const COST = {
+  linear: { b: 0, s: last(SEARCH.linear) / 1000 },
+  sorted: { b: last(BUILD.sorted), s: last(SEARCH.sorted) / 1000 },
+  hash:   { b: last(BUILD.hash), s: last(SEARCH.hash) / 1000 }
+};
+const cross = (a, b) => (COST[b].b - COST[a].b) / (COST[a].s - COST[b].s);   // a가 b보다 느려지는 검색 횟수
+const qHashSorted = cross('sorted', 'hash'), qHashLinear = cross('linear', 'hash');
+const Q = [1, 3, 10, 30, 100, 300, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6, 3e6, 1e7];
+fig('f-break', '총 시간 = 구축 시간 + 검색 횟수 × 검색 1번 (100만 항목)', chart({
+  xs: Q, xticks: [[1, '1번'], [100, '100번'], [1e4, '1만 번'], [1e7, '1천만 번']],
+  ylog: true, ymin: 100, ymax: 1e10,
+  yticks: [[1e3, '1초'], [6e4, '1분'], [3.6e6, '1시간'], [8.64e7, '1일'], [2.592e9, '30일']],
+  series: ['linear', 'sorted', 'hash'].map(k => ({ v: Q.map(q => COST[k].b + q * COST[k].s), tone: TONE[k], label: NAME[k], dots: false, ly: k === 'sorted' ? -8 : k === 'hash' ? 12 : 0 })),
+  marks: [{ x: qHashSorted, y: COST.hash.b + qHashSorted * COST.hash.s, text: tenK(qHashSorted) + ' 번', tone: 'blue' }]
+}));
+$('break-text').innerHTML = `
+  <li>정렬 배열은 첫 검색부터 순차 배열보다 빠름. 해시는 검색 ${Math.ceil(qHashLinear)}번째부터 순차 배열을 앞지름.</li>
+  <li>해시가 정렬 배열을 앞지르려면 검색 <b>${tenK(qHashSorted)} 번</b>이 필요.</li>
+  <li>구축이 ${comma(COST.hash.b - COST.sorted.b)}ms 더 걸리는 대신 검색 1번에 ${((COST.sorted.s - COST.hash.s) * 1000).toFixed(1)}µs씩 아끼므로, 그만큼 검색해야 본전.</li>`;
+
+$('f-pick').innerHTML = `
+  <div><p>검색을 한두 번만 하고 끝남, 준비 시간을 쓰기 아까움</p><b>순차 배열</b></div>
+  <div class="on"><p>보통의 경우. 메모리가 넉넉하지 않고 검색도 자주 함</p><b>정렬 배열</b></div>
+  <div><p>검색을 ${tenK(qHashSorted)} 번 넘게 하고 메모리가 충분함</p><b>체이닝 해시</b></div>`;
+
+// ---------- C++ vs Python ----------
+if (!PY) {
+  $('lang-title').innerHTML = 'C++ vs Python <span class="wait">측정 전 가설</span>';
+  $('f-lang').innerHTML = `<div class="hyp">
+    <div><b>모든 값이 객체</b><p>Python은 숫자 하나, 튜플 하나도 따로 만든 객체. 해시표 칸마다 리스트와 튜플이 생겨 항목당 메모리가 C++보다 훨씬 클 것으로 예상.</p></div>
+    <div><b>참조만 모인 리스트</b><p>리스트에는 값이 아니라 객체 주소만 이어져 있음. 실제 값은 메모리 곳곳에 흩어져 캐시 효율이 떨어짐.</p></div>
+    <div><b>인터프리터</b><p>한 줄씩 해석하며 실행. 같은 비교 한 번에 드는 시간이 C++보다 수십~수백 배.</p></div>
+  </div><p>Python 측정값이 들어오면 이 자리에 C++ 대비 몇 배인지 표로 나옴.</p>`;
+} else {
+  const rows = (cap, obj, fmt) => `<tr><td class="cap" colspan="4">${cap}</td></tr>` +
+    Object.entries(obj).map(([k, [c, p]]) => `<tr><td>${NAME[k]}</td><td>${fmt(c)}</td><td>${fmt(p)}</td><td class="best"><span>${(p / c).toFixed(0)}배</span></td></tr>`).join('');
+  $('lang-title').textContent = `C++ vs Python (${PY.n})`;
+  $('f-lang').innerHTML = `<div class="fig"><table class="tbl"><tr><th>${PY.n}</th><th>C++</th><th>Python</th><th>차이</th></tr>
+    ${rows('검색 1번', PY.search, fmtUs)}${rows('구축', PY.build, fmtMs)}${rows('색인 메모리', PY.mem, fmtMB)}</table></div>
+    <p>같은 PC, 같은 데이터, 같은 알고리즘으로 잰 값. 차이는 Python ÷ C++.</p>`;
+}
+
+// ---------- 읽는 중인 절을 왼쪽 목차에 표시 (index.html과 같은 방식) ----------
+const links = [...document.querySelectorAll('#toc a')];
+const mark = id => links.forEach(a => a.classList.toggle('on', a.hash === '#' + id));
+const secs = [...document.querySelectorAll('.doc section')];
+const update = () => {
+  let cur = secs[0];
+  for (const sec of secs) if (sec.getBoundingClientRect().top < innerHeight * .35) cur = sec;
+  if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) cur = last(secs);
+  mark(cur.id);
+};
+addEventListener('scroll', update, { passive: true });
+update();
+}
+</script>
+</body>
+</html>
