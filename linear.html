@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=12">
+<link rel="stylesheet" href="common.css?v=13">
 </head>
 <body>
 <div class="app">
@@ -210,46 +210,76 @@ const slideHTML = (b, i) => {
   <div class="sr sl-q" style="top:114px;left:${SX - PX}px">${cells(Q, i, i, r, () => 'tint')}</div>
   <div class="sr" style="top:172px"><span class="note">맞은 칸</span></div>
   <div class="sr sl-rec" style="top:172px;left:${SX - PX}px">${Array.from({ length: n }, () => '<span></span>').join('')}</div>
+  <div class="sr sl-ctl" style="top:214px;left:${SX - PX}px"><button type="button" data-a="auto"></button><button type="button" data-a="step"></button><button type="button" data-a="reset">처음부터</button></div>
 </div>`;
 };
+let autoOn = true;  // 자동 이동 여부. 단계를 넘어가도 유지
 function runSlide(t, b, i) {
   const el = document.querySelector(`#stage .sl[data-k="${b}-${i}"]`);
   if (!el) return;
   const m = blocks[b], n = m.notes.length, row = K[b][i], calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ms = [...el.querySelectorAll('.sl-m .tl')], qs = [...el.querySelectorAll('.sl-q .tl')], rec = [...el.querySelectorAll('.sl-rec span')];
   const qrow = el.querySelector('.sl-q'), st = el.querySelector('.sl-st .pill');
+  const bAuto = el.querySelector('[data-a="auto"]'), bStep = el.querySelector('[data-a="step"]'), bReset = el.querySelector('[data-a="reset"]');
   const base = ms.map(c => c.innerHTML);
-  let j = 0, best = 0;
+  let j = 0, best = 0, timers = [];
+  const later = (f, ms) => timers.push(setTimeout(f, ms));
+  const stop = () => { timers.forEach(clearTimeout); timers = []; };
   const alive = () => t === tok && el.isConnected && el.parentElement.style.opacity !== '0' && !document.getElementById('fit').hidden;
-  const reset = () => { j = 0; best = 0; rec.forEach(x => { x.textContent = ''; x.className = ''; }); };
+  const label = () => {
+    bAuto.textContent = autoOn ? '자동 이동 끄기' : '자동 이동 켜기';
+    bAuto.classList.toggle('on', autoOn);
+    bStep.textContent = j === n ? '처음 위치로' : j === 0 ? '0번 위치 비교' : '한 칸 이동';
+  };
+  const reset = () => {
+    j = 0; best = 0;
+    rec.forEach(x => { x.textContent = ''; x.className = ''; });
+    qrow.style.transform = 'translateX(0px)';
+    ms.forEach((c, x) => { c.className = 'tl'; c.innerHTML = base[x]; });
+    qs.forEach(c => c.className = 'tl tint');
+    st.textContent = '위치 0'; st.className = 'pill soft';
+    label();
+  };
   const paint = (k, over) => {
     ms.forEach((c, x) => c.className = 'tl' + (x >= j && x < j + k ? ' on' : k < over && x === j + k ? ' miss' : ''));
     qs.forEach((c, x) => c.className = 'tl' + (x < k ? ' on' : k < over && x === k ? ' miss' : x >= over ? ' dim' : ''));
   };
-  const step = () => {
+  // 위치 j로 옮기고 비교 결과 표시. 끝나면 j가 하나 늘어남
+  const step = (then, d = calm ? 0 : 300) => {
     if (!alive()) return;
-    if (j === n) { setTimeout(() => { if (alive()) { reset(); step(); } }, 1800); return; }
+    if (j === n) reset();
     const k = row[j], over = Math.min(r - i, n - j);
     qrow.style.transform = `translateX(${j * CW}px)`;
     ms.forEach((c, x) => { c.className = 'tl'; c.innerHTML = x === j ? startMark(m, j) : base[x]; }); qs.forEach((c, x) => c.className = 'tl tint' + (x >= over ? ' dim' : ''));
     st.textContent = `위치 ${j}`; st.className = 'pill soft';
-    setTimeout(() => {
+    const show = () => {
       if (!alive()) return;
       paint(k, over);
       best = Math.max(best, k);
       rec[j].textContent = k;
       rec.forEach((x, y) => x.className = y <= j && +x.textContent === best && best > 1 ? 'hit' : '');
       st.textContent = `위치 ${j}: ${k}칸 일치 · 최댓값 ${best}칸`; st.className = 'pill';
-      j++;
-      setTimeout(step, calm ? 600 : 520);
-    }, calm ? 0 : 300);
+      j++; label();
+      if (then) then();
+    };
+    if (d) later(show, d); else show();
   };
-  reset(); step();
+  // 자동 이동: 한 칸씩 계속, 끝에 닿으면 잠깐 멈춘 뒤 처음부터
+  const play = () => {
+    if (!alive() || !autoOn) return;
+    if (j === n) { later(() => { if (alive() && autoOn) { reset(); play(); } }, 1800); return; }
+    step(() => later(play, calm ? 600 : 520));
+  };
+  bAuto.addEventListener('click', () => { autoOn = !autoOn; stop(); label(); if (autoOn) play(); });
+  bStep.addEventListener('click', () => { autoOn = false; stop(); if (j === n) reset(); else step(null, 0); label(); });
+  bReset.addEventListener('click', () => { stop(); reset(); if (autoOn) play(); });
+  reset();
+  if (autoOn) play();
 }
 const slide = (b, i) => () => {
   const t = ++tok;
   setTimeout(() => runSlide(t, b, i), 80);
-  return { W: SW, H: PY + 206, items: [{ id: 'sl', x: PX, y: PY, html: slideHTML(b, i) }] };
+  return { W: SW, H: PY + 256, items: [{ id: 'sl', x: PX, y: PY, html: slideHTML(b, i) }] };
 };
 
 // 4. 모든 쌍 표: 채우는 순서 = 코드의 for문 순서
@@ -299,7 +329,7 @@ startPage({
       { title: '입력 1번 칸을 블록 2번 칸에 맞추면 4칸 연속 일치', desc: ['입력 1번 칸과 블록 2번 칸이 새 시작 칸이라 ●로 봄', '그 뒤 번호 3, 5, 3이 모두 같아 4칸 일치', '그래서 입력과 원곡의 시작이 달라도 일치 구간을 찾음'], draw: still(() => pair(1, 2)) }
     ] },
     { phase: '검색', label: '한 칸씩 이동', title: '입력을 원곡 맨 앞에 맞추고 한 칸씩 뒤로 옮기며 비교', frames: [
-      { title: '입력 전체로 원곡 맨 앞부터 끝까지 비교', desc: ['위치마다 입력 첫 칸부터 번호 비교, 원곡 쪽 맞춘 칸은 시작 칸(●)으로 봄', '다른 번호가 나오면 멈춤', '맞은 칸 수를 아래에 기록하고, 맞든 틀리든 한 칸 뒤로', '원곡 끝을 넘는 입력 칸은 비교하지 않음 (흐린 칸)'], draw: slide(0, 0) },
+      { title: '입력 전체로 원곡 맨 앞부터 끝까지 비교', desc: ['위치마다 입력 첫 칸부터 번호 비교, 원곡 쪽 맞춘 칸은 시작 칸(●)으로 봄', '다른 번호가 나오면 멈춤', '맞은 칸 수를 아래에 기록하고, 맞든 틀리든 한 칸 뒤로', '원곡 끝을 넘는 입력 칸은 비교하지 않음 (흐린 칸)', '아래 버튼으로 자동 이동을 끄고 한 칸씩 옮겨 볼 수 있음'], draw: slide(0, 0) },
       { title: '입력 맨 앞 1칸을 떼고 다시 원곡 맨 앞부터', desc: ['남은 입력 4칸으로 같은 과정 반복, 입력 1번 칸이 새 시작 칸(●)', '원곡 2번 위치에서 4칸 연속 일치'], draw: slide(0, 1) },
       { title: '입력 맨 앞 2칸을 떼고 다시 원곡 맨 앞부터', desc: '남은 입력 3칸으로 같은 과정 반복.', draw: slide(0, 2) },
       { title: '입력 맨 앞 3칸을 떼고 다시 원곡 맨 앞부터', desc: '남은 입력 2칸으로 같은 과정 반복.', draw: slide(0, 3) },
