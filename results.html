@@ -33,7 +33,15 @@
 .key span{display:inline-block;padding:0 8px;margin-right:4px;border-radius:5px;background:var(--blue-weak);color:var(--blue-ink);font-weight:700}
 .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .charts3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
-svg .ln.th{stroke-dasharray:6 5;stroke-width:1.6;opacity:.75}
+svg .ln.th{stroke-dasharray:7 5;stroke-width:2}
+svg .ln.py{opacity:.45}
+svg .pt.py{fill:var(--card)!important;stroke-width:1.6}
+svg .pt.py.lin{stroke:var(--mute)}svg .pt.py.sor{stroke:var(--ink)}svg .pt.py.has{stroke:var(--blue)}
+svg .end.py{opacity:.6}svg .end.th{font-weight:600}
+svg .lg{font:600 11.5px "IBM Plex Sans KR",sans-serif;fill:var(--ink)}svg .lg.py{fill:var(--mute)}
+svg .mth{font:600 12.5px "IBM Plex Sans KR",sans-serif;fill:var(--sub)}
+.leg i.dash{background:repeating-linear-gradient(90deg,var(--sub) 0 6px,transparent 6px 10px)}
+.leg i.py{opacity:.45}
 svg .end{font:700 12px "IBM Plex Sans KR",sans-serif}
 svg .end.lin{fill:var(--mute)}svg .end.sor{fill:var(--ink)}svg .end.has{fill:var(--blue)}
 .doc figure{margin:0}
@@ -116,18 +124,19 @@ svg .hit{fill:transparent}
 
   <section id="g-theory">
     <h2>이론(빅O)과 실측 비교 (DB에 있는 곡)</h2>
-    <p class="leg"><span><i class="lin"></i>순차 배열 O(N)</span><span><i class="sor"></i>정렬 배열 O(log N)</span><span><i class="has"></i>체이닝 해시 O(1)</span><span style="color:var(--mute);font-weight:500">세로축: 1천 항목일 때 검색 시간의 몇 배 (로그 눈금) · 실측 그래프의 점선은 이론</span></p>
-    <div class="charts3"><figure id="c-th"></figure><figure id="c-th-cpp"></figure><figure id="c-th-py"></figure></div>
+    <p class="leg"><span><i class="dash"></i>이론</span><span><i class="plain"></i>C++ 실측</span><span><i class="plain py"></i>Python 실측</span><span style="color:var(--mute);font-weight:500">세로축: 1천 항목일 때 검색 시간의 몇 배 · 가로·세로 모두 일반 눈금</span></p>
+    <div class="charts3"><figure id="c-th-linear"></figure><figure id="c-th-sorted"></figure><figure id="c-th-hash"></figure></div>
     <ul>
       <li>이론: 데이터가 1,000배 늘면 순차 배열 O(N)은 1,000배, 정렬 배열 O(log N)은 2배(log₂100만 ÷ log₂1천 = 20 ÷ 10), 해시 O(1)은 그대로.</li>
       <li>실측: 순차 배열 C++ 964배·Python 1,111배, 정렬 배열 C++ 2.0배·Python 1.6배, 해시 C++ 1.1배·Python 1.0배. 세 방식 모두 이론과 거의 같게 늘어남.</li>
+      <li>이론상 O(1)인 해시가 O(log N)인 정렬 배열보다 빨라야 하지만 C++ 수록곡은 정렬 배열이 더 빠름(0.54µs 대 0.83µs). 해시는 검색 전에 입력 조각의 해시값을 길이마다 모두 계산(16칸이면 136번)하지만, 정렬 배열은 입력 전체가 일치하면 이진 탐색 한 번(약 20번 비교)으로 끝나기 때문.</li>
       <li>중간에 오르내리는 것은 데이터 크기마다 질의 50개가 달라 일치 길이·일치 곡 수가 달라지기 때문. DB에 없는 곡은 위 설명처럼 작은 데이터에서 더 느려 이론과 다르게 움직임.</li>
     </ul>
   </section>
 
   <section id="g-type">
     <h2>입력 유형별 검색 시간 (100만 항목)</h2>
-    <p class="leg"><span><i class="box lin"></i>순차 배열</span><span><i class="box sor"></i>정렬 배열</span><span><i class="box has"></i>체이닝 해시</span><span><i class="box plain"></i>C++</span><span><i class="box plain py"></i>Python</span><span style="color:var(--mute);font-weight:500">로그 눈금</span></p>
+    <p class="leg"><span><i class="box lin"></i>순차 배열</span><span><i class="box sor"></i>정렬 배열</span><span><i class="box has"></i>체이닝 해시</span><span style="color:var(--mute);font-weight:500">막대마다 아래에 언어 표시 (진한 막대 C++, 옅은 막대 Python) · 로그 눈금</span></p>
     <figure id="c-type"></figure>
     <ul>
       <li>DB에 있는 곡은 C++에서 정렬 배열이 가장 빠르고, 변형·없는 곡은 C++·Python 모두 해시가 빠름. 입력 종류에 따라 더 빠른 쪽이 바뀜.</li>
@@ -137,7 +146,7 @@ svg .hit{fill:transparent}
 
   <section id="g-build">
     <h2>구축 비용 (100만 항목)</h2>
-    <p class="leg"><span><i class="box sor"></i>정렬 배열</span><span><i class="box has"></i>체이닝 해시</span><span><i class="box plain"></i>C++</span><span><i class="box plain py"></i>Python</span><span style="color:var(--mute);font-weight:500">로그 눈금</span></p>
+    <p class="leg"><span style="color:var(--mute);font-weight:500">막대마다 아래에 언어 표시 (진한 막대 C++, 옅은 막대 Python) · 로그 눈금</span></p>
     <figure id="c-build"></figure>
     <ul>
       <li>해시는 정렬 배열보다 구축이 오래 걸림 (C++ 6.3배, Python 1.3배). 순차 배열은 구축 없음.</li>
@@ -147,7 +156,7 @@ svg .hit{fill:transparent}
 
   <section id="g-mem">
     <h2>메모리 사용량 (100만 항목)</h2>
-    <p class="leg"><span><i class="box dat"></i>원곡 데이터</span><span><i class="box sor"></i>정렬 배열 색인</span><span><i class="box has"></i>체이닝 해시 색인</span><span><i class="box plain"></i>C++</span><span><i class="box plain py"></i>Python</span><span style="color:var(--mute);font-weight:500">로그 눈금 · 원곡 데이터는 프로세스 메모리(RSS), 색인은 C++ 힙·Python getsizeof</span></p>
+    <p class="leg"><span style="color:var(--mute);font-weight:500">막대마다 아래에 언어 표시 (진한 막대 C++, 옅은 막대 Python) · 로그 눈금 · 원곡 데이터는 프로세스 메모리(RSS), 색인은 C++ 힙·Python getsizeof</span></p>
     <figure id="c-mem"></figure>
     <ul>
       <li>원곡 데이터·정렬 배열은 C++가 <code>vector&lt;int&gt;</code>(값만 4바이트), Python이 <code>list</code>(칸마다 포인터 8바이트 + int 객체)를 써서 Python이 3~9배 크고, 해시는 Python도 <code>array("i")</code>를 써서 C++와 같음.</li>
@@ -192,63 +201,68 @@ for (const t of ['in', 'out']) for (const l of ['cpp', 'py']) {
   line(`c-${t}-${l}`, l, t, lo, hi);
 }
 
-// 이론 대 실측: 세로 = 1천 항목일 때의 몇 배. lang이 없으면 이론만
+// 이론 대 실측: 방식마다 한 그래프. 가로 N, 세로 1천 항목일 때 검색 시간의 몇 배 (둘 다 일반 눈금)
 const TH = { linear: n => n / 1e3, sorted: n => Math.log2(n) / Math.log2(1e3), hash: () => 1 };
 const BIGO = { linear: 'O(N)', sorted: 'O(log N)', hash: 'O(1)' };
-function growth(id, lang) {
-  const W = 440, H = 380, L = 62, R = 74, T = 36, B = 44, s = [], lo = Math.log10(0.5), hi = Math.log10(3000);
-  const x = n => L + (Math.log10(n) - 3) / 3 * (W - L - R), y = v => T + (hi - Math.log10(v)) / (hi - lo) * (H - T - B);
-  s.push(`<text class="ttl" x="${L}" y="20">${lang ? '실측 ' + LANG[lang] : '이론 (빅O)'}</text>`);
-  for (const v of [1, 10, 100, 1000]) s.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v.toLocaleString()}배</text>`);
+const niceStep = mx => { const e = 10 ** Math.floor(Math.log10(mx / 4)); return [1, 2, 2.5, 5, 10].map(k => k * e).find(st => mx / st <= 5); };
+const times = v => (v >= 100 ? Math.round(v) : p3(v)).toLocaleString() + '배';
+function growth(id, m) {
+  const W = 440, H = 340, L = 58, R = 104, T = 36, B = 44, s = [];
+  const act = { cpp: D.cpp.search.in[m].map((u, i, a) => u / a[0]), py: D.py.search.in[m].map((u, i, a) => u / a[0]) };
+  const step = niceStep(Math.max(TH[m](1e6), ...act.cpp, ...act.py) * 1.08), ymax = step * Math.ceil(Math.max(TH[m](1e6), ...act.cpp, ...act.py) * 1.08 / step);
+  const x = n => L + n / 1e6 * (W - L - R), y = v => T + (1 - v / ymax) * (H - T - B);
+  s.push(`<text class="ttl" x="${L}" y="20">${NAME[m]} ${BIGO[m]}</text>`);
+  for (let v = 0; v <= ymax + 1e-9; v += step) s.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${p3(v).toLocaleString()}배</text>`);
   s.push(`<line class="base" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`);
-  [[1e3, '1천'], [1e4, '1만'], [1e5, '10만'], [1e6, '100만']].forEach(([n, t]) => s.push(`<text class="ax" x="${x(n)}" y="${H - B + 18}" text-anchor="middle">${t}</text>`));
+  [[0, '0'], [25e4, '25만'], [5e5, '50만'], [75e4, '75만'], [1e6, '100만']].forEach(([n, t]) => s.push(`<text class="ax" x="${x(n)}" y="${H - B + 18}" text-anchor="middle">${t}</text>`));
   s.push(`<text class="ax" x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle">데이터 수 N (항목)</text>`);
-  const ends = [];
-  for (const m of M) {
-    const th = NS.map(TH[m]);
-    s.push(`<polyline class="ln ${TONE[m]} ${lang ? 'th' : ''}" points="${th.map((u, i) => `${x(NS[i]).toFixed(1)},${y(u).toFixed(1)}`).join(' ')}"/>`);
-    let last = th[th.length - 1], label = BIGO[m];
-    if (lang) {
-      const v = D[lang].search.in[m], r = v.map(u => u / v[0]);
-      s.push(`<polyline class="ln ${TONE[m]}" points="${r.map((u, i) => `${x(NS[i]).toFixed(1)},${y(u).toFixed(1)}`).join(' ')}"/>`);
-      r.forEach((u, i) => s.push(`<g><circle class="pt ${TONE[m]}" cx="${x(NS[i]).toFixed(1)}" cy="${y(u).toFixed(1)}" r="3.4"/><circle class="hit" cx="${x(NS[i]).toFixed(1)}" cy="${y(u).toFixed(1)}" r="10"><title>${LANG[lang]} · ${NAME[m]} · ${NL[i]} 항목 · 1천의 ${p3(u)}배 (이론 ${p3(th[i])}배)</title></circle></g>`));
-      last = r[r.length - 1]; label = (last >= 100 ? Math.round(last) : p3(last)).toLocaleString() + '배';
-    }
-    ends.push([m, y(last), label]);
+  const curve = []; for (let k = 0; k <= 200; k++) { const n = 1e3 + (1e6 - 1e3) * (k / 200) ** 2; curve.push(`${x(n).toFixed(1)},${y(TH[m](n)).toFixed(1)}`); }
+  s.push(`<polyline class="ln ${TONE[m]} th" points="${curve.join(' ')}"/>`);
+  const ends = [[m, y(TH[m](1e6)), '이론 ' + times(TH[m](1e6)), 'th']];
+  for (const l of ['cpp', 'py']) {
+    const r = act[l];
+    s.push(`<polyline class="ln ${TONE[m]} ${l}" points="${r.map((u, i) => `${x(NS[i]).toFixed(1)},${y(u).toFixed(1)}`).join(' ')}"/>`);
+    r.forEach((u, i) => s.push(`<g><circle class="pt ${TONE[m]} ${l}" cx="${x(NS[i]).toFixed(1)}" cy="${y(u).toFixed(1)}" r="3.4"/><circle class="hit" cx="${x(NS[i]).toFixed(1)}" cy="${y(u).toFixed(1)}" r="10"><title>${LANG[l]} · ${NAME[m]} · ${NL[i]} 항목 · 1천의 ${p3(u)}배 (이론 ${p3(TH[m](NS[i]))}배)</title></circle></g>`));
+    ends.push([m, y(r[r.length - 1]), LANG[l] + ' ' + times(r[r.length - 1]), l]);
   }
   ends.sort((a, b) => a[1] - b[1]);
   for (let k = 1; k < ends.length; k++) if (ends[k][1] - ends[k - 1][1] < 15) ends[k][1] = ends[k - 1][1] + 15;   // 끝 이름이 겹치지 않게
-  ends.forEach(([m, yy, t]) => s.push(`<text class="end ${TONE[m]}" x="${W - R + 8}" y="${yy + 4}">${t}</text>`));
-  document.getElementById(id).innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${lang ? '실측 ' + LANG[lang] : '이론'} 증가 배수">${s.join('')}</svg>`;
+  ends.forEach(([mm, yy, t, c]) => s.push(`<text class="end ${TONE[mm]} ${c}" x="${W - R + 8}" y="${yy + 4}">${t}</text>`));
+  document.getElementById(id).innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${NAME[m]} 이론과 실측">${s.join('')}</svg>`;
 }
-growth('c-th'); growth('c-th-cpp', 'cpp'); growth('c-th-py', 'py');
+for (const m of M) growth('c-th-' + m, m);
 
 // 막대: groups = [[묶음 이름, [[막대 이름, 방식, 언어, 값(µs)], ...]], ...]
 function bars(id, groups, label, o = {}) {
-  const BW = o.bw || 24, IN = o.in || 3, MG = 16, GG = o.gg || 56, L = 62, R = 18, T = 24, B = 54, H = 340, PAD = 16;
+  const BW = o.bw || 24, IN = o.in || 3, MG = o.mg || 16, GG = o.gg || 56, L = 62, R = 18, T = 24, PH = 262, PAD = 16;
+  const multi = groups.some(g => g[1].length > 2);   // 묶음 안에 방식이 여러 개면 막대 쌍마다 방식 이름 줄을 둠
+  const B = multi ? 80 : 60, H = T + PH + B, base = T + PH;
   const vals = groups.flatMap(g => g[1].map(b => b[3])), [lo, hi] = range(vals);
   let W = L + PAD + R + PAD, xs = [];
   groups.forEach((g, gi) => { const n = g[1].length / 2; xs.push(W - R - PAD); W += n * (2 * BW + IN) + (n - 1) * MG + (gi < groups.length - 1 ? GG : 0); });
-  const y = v => T + (hi - Math.log10(v)) / (hi - lo) * (H - T - B), s = [];
+  const y = v => T + (hi - Math.log10(v)) / (hi - lo) * PH, s = [];
   const vf = o.fmt || tfmt;
   yAxis(s, y, lo, hi, L, R, W, o.tick || tick);
   groups.forEach((g, gi) => {
-    let x = xs[gi];
+    let x = xs[gi], pair = x;
     const start = x;
     g[1].forEach((b, k) => {
-      const [nm, m, lang, v] = b, yy = y(v), h = H - B - yy;
-      s.push(`<g><rect class="bar ${TONE[m]} ${lang}" x="${x}" y="${yy.toFixed(1)}" width="${BW}" height="${h.toFixed(1)}" rx="3"/><rect class="hit" x="${x}" y="${T}" width="${BW}" height="${H - B - T}"><title>${LANG[lang]} · ${NAME[m]} · ${vf(v)}</title></rect></g>`);
+      const [nm, m, lang, v] = b, yy = y(v), h = base - yy;
+      s.push(`<g><rect class="bar ${TONE[m]} ${lang}" x="${x}" y="${yy.toFixed(1)}" width="${BW}" height="${h.toFixed(1)}" rx="3"/><rect class="hit" x="${x}" y="${T}" width="${BW}" height="${PH}"><title>${LANG[lang]} · ${NAME[m]} · ${vf(v)}</title></rect></g>`);
       if (label) s.push(`<text class="val" x="${x + BW / 2}" y="${yy - 6}" text-anchor="middle">${vf(v)}</text>`);
+      s.push(`<text class="lg ${lang}" x="${x + BW / 2}" y="${base + 16}" text-anchor="middle">${LANG[lang]}</text>`);
+      if (k % 2 && multi) s.push(`<text class="mth" x="${(pair + x + BW) / 2}" y="${base + 34}" text-anchor="middle">${NAME[m]}</text>`);
+      if (k % 2) pair = x + BW + MG;
       x += BW + (k % 2 ? MG : IN);
     });
-    s.push(`<text class="grp" x="${(start + x - MG) / 2}" y="${H - B + 24}" text-anchor="middle">${g[0]}</text>`);
+    s.push(`<text class="grp" x="${(start + x - MG) / 2}" y="${base + (multi ? 60 : 40)}" text-anchor="middle">${g[0]}</text>`);
   });
-  s.push(`<line class="base" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`);
+  s.push(`<line class="base" x1="${L}" x2="${W - R}" y1="${base}" y2="${base}"/>`);
   document.getElementById(id).innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" style="width:${W}px;max-width:100%">${s.join('')}</svg>`;
 }
 const last = a => a[a.length - 1];
 bars('c-type', [['수록곡', 'in'], ['변형', 'var'], ['미수록곡', 'out']].map(([g, t]) =>
-  [g, M.flatMap(m => ['cpp', 'py'].map(l => [g, m, l, last(D[l].search[t][m])]))]), true);
+  [g, M.flatMap(m => ['cpp', 'py'].map(l => [g, m, l, last(D[l].search[t][m])]))]), true, { bw: 40, in: 4, mg: 20, gg: 64 });
 bars('c-build', [['정렬 배열', 'sorted'], ['체이닝 해시', 'hash']].map(([g, m]) =>
   [g, ['cpp', 'py'].map(l => [g, m, l, last(D[l].build[m]) * 1000])]), true, { bw: 56, in: 6, gg: 120 });
 const MEM = { cpp: { data: 40.4, sorted: 4.00, hash: 327 }, py: { data: 135, sorted: 36.3, hash: 327 } };   // MB, 결과표 100만
