@@ -252,7 +252,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 .chg .dot{width:10px;height:10px;border-radius:50%;background:currentColor}
 .chg .ok{grid-column:1/-1;margin:10px 0 0;padding:14px 16px;border-radius:12px;background:var(--fill);font-size:15px;line-height:1.8}
 .chg .ok b{margin-right:8px;color:var(--blue-ink)}
-.sl{position:relative;height:250px}
+.sl{position:relative;height:200px}
 .sl .sr{position:absolute;left:0}
 .sl .sl-q{transition:transform .28s cubic-bezier(.2,.8,.2,1)}
 .sl-rec{display:flex;gap:4px}
@@ -261,7 +261,12 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offse
 @media(prefers-reduced-motion:reduce){.sl .sl-q{transition:none}}
 .sl-idx{display:flex;gap:4px}
 .sl-idx span{width:32px;text-align:center;font-size:12px;font-weight:600;color:var(--mute)}
-.sl-ctl{display:flex;gap:8px}
-.sl-ctl button{pointer-events:auto;height:36px;padding:0 14px;border:0;border-radius:10px;background:var(--fill);color:var(--ink);font:600 14px "IBM Plex Sans KR",sans-serif;cursor:pointer}
-.sl-ctl button:hover{background:var(--line)}
-.sl-ctl button.on{background:var(--blue-weak);color:var(--blue-ink)}
+/* 하단 재생 버튼 (순차 배열 이동 그림) */
+.cta div:has(.media:not([hidden])){max-width:760px}
+.media{display:flex;gap:8px;margin-right:8px}
+.media[hidden]{display:none}
+.mbtn{flex:none;width:56px;height:56px;border:0;border-radius:16px;background:var(--card);color:var(--ink);display:grid;place-items:center;cursor:pointer;box-shadow:inset 0 0 0 1px var(--line);transition:transform .1s}
+.mbtn:active{transform:scale(.95)}
+.mbtn svg{width:22px;height:22px;fill:currentColor}
+.mbtn.play{color:var(--blue)}
+.mbtn.play svg{width:24px;height:24px}

@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=13">
+<link rel="stylesheet" href="common.css?v=14">
 </head>
 <body>
 <div class="app">
@@ -19,7 +19,7 @@
 <div class="content">
 <div class="bar"><div class="prog"><i id="prog"></i></div><div class="tt" aria-live="polite"><p class="phase" id="phase"></p><h1 id="title"></h1></div></div>
 <main class="main"><section class="card" id="card"><div class="fit" id="fit"><div class="box" id="box"><div id="stage"></div></div></div><div class="code" id="code" hidden></div><div class="desc" id="desc" aria-live="polite" hidden></div></section></main>
-<footer class="cta"><div><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
+<footer class="cta"><div><span class="media" id="media" hidden><button class="mbtn" id="m-back" type="button" aria-label="한 칸 뒤로" title="한 칸 뒤로"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="2.6" height="14" rx="1"/><path d="M19 5.8v12.4a1 1 0 0 1-1.5.86L8.6 13.3a1.5 1.5 0 0 1 0-2.6l8.9-5.76A1 1 0 0 1 19 5.8z"/></svg></button><button class="mbtn play" id="m-play" type="button" aria-label="일시정지" title="일시정지"></button><button class="mbtn" id="m-fwd" type="button" aria-label="한 칸 앞으로" title="한 칸 앞으로"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="16.4" y="5" width="2.6" height="14" rx="1"/><path d="M5 5.8v12.4a1 1 0 0 0 1.5.86l8.9-5.76a1.5 1.5 0 0 0 0-2.6L6.5 4.94A1 1 0 0 0 5 5.8z"/></svg></button></span><button class="btn weak" id="prev" type="button">이전</button><button class="btn pri" id="next" type="button">다음</button></div></footer>
 </div>
 </div>
 <script type="text/plain" id="src">
@@ -195,7 +195,8 @@ const pair = (i, j) => {
 // 위치마다 입력 첫 칸부터 비교 → 맞은 칸 수 기록 → 맞든 틀리든 한 칸 뒤로
 const SX = PX + 96, SW = SX + (NMAX + r - 1) * CW + PX;
 let tok = 0;
-const still = f => () => { tok++; return f(); };
+const still = f => () => { tok++; slideOn = false; return f(); };
+let slideOn = false;  // 지금 단계가 이동 그림인지
 const slideHTML = (b, i) => {
   const m = blocks[b], n = m.notes.length;
   const lab = (c, cls, t) => `<div class="lab">${chip(c, cls)}<span>${t}</span></div>`;
@@ -210,27 +211,28 @@ const slideHTML = (b, i) => {
   <div class="sr sl-q" style="top:114px;left:${SX - PX}px">${cells(Q, i, i, r, () => 'tint')}</div>
   <div class="sr" style="top:172px"><span class="note">맞은 칸</span></div>
   <div class="sr sl-rec" style="top:172px;left:${SX - PX}px">${Array.from({ length: n }, () => '<span></span>').join('')}</div>
-  <div class="sr sl-ctl" style="top:214px;left:${SX - PX}px"><button type="button" data-a="auto"></button><button type="button" data-a="step"></button><button type="button" data-a="reset">처음부터</button></div>
 </div>`;
 };
 let autoOn = true;  // 자동 이동 여부. 단계를 넘어가도 유지
+let ctl = null;     // 지금 보이는 이동 그림의 조작 함수 (하단 재생 버튼이 호출)
+const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.8v14.4a1 1 0 0 0 1.53.85l11.2-7.2a1 1 0 0 0 0-1.7L8.53 3.95A1 1 0 0 0 7 4.8z"/></svg>';
+const PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1.3"/><rect x="14" y="4.5" width="4" height="15" rx="1.3"/></svg>';
+function playIcon() {
+  const b = document.getElementById('m-play');
+  b.innerHTML = autoOn ? PAUSE : PLAY;
+  b.setAttribute('aria-label', autoOn ? '일시정지' : '재생'); b.title = autoOn ? '일시정지' : '재생';
+}
 function runSlide(t, b, i) {
   const el = document.querySelector(`#stage .sl[data-k="${b}-${i}"]`);
   if (!el) return;
   const m = blocks[b], n = m.notes.length, row = K[b][i], calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ms = [...el.querySelectorAll('.sl-m .tl')], qs = [...el.querySelectorAll('.sl-q .tl')], rec = [...el.querySelectorAll('.sl-rec span')];
   const qrow = el.querySelector('.sl-q'), st = el.querySelector('.sl-st .pill');
-  const bAuto = el.querySelector('[data-a="auto"]'), bStep = el.querySelector('[data-a="step"]'), bReset = el.querySelector('[data-a="reset"]');
   const base = ms.map(c => c.innerHTML);
-  let j = 0, best = 0, timers = [];
-  const later = (f, ms) => timers.push(setTimeout(f, ms));
+  let j = 0, best = 0, timers = [];   // j = 다음에 비교할 위치. 0~j-1 위치는 비교 끝
+  const later = (f, d) => timers.push(setTimeout(f, d));
   const stop = () => { timers.forEach(clearTimeout); timers = []; };
   const alive = () => t === tok && el.isConnected && el.parentElement.style.opacity !== '0' && !document.getElementById('fit').hidden;
-  const label = () => {
-    bAuto.textContent = autoOn ? '자동 이동 끄기' : '자동 이동 켜기';
-    bAuto.classList.toggle('on', autoOn);
-    bStep.textContent = j === n ? '처음 위치로' : j === 0 ? '0번 위치 비교' : '한 칸 이동';
-  };
   const reset = () => {
     j = 0; best = 0;
     rec.forEach(x => { x.textContent = ''; x.className = ''; });
@@ -238,7 +240,6 @@ function runSlide(t, b, i) {
     ms.forEach((c, x) => { c.className = 'tl'; c.innerHTML = base[x]; });
     qs.forEach(c => c.className = 'tl tint');
     st.textContent = '위치 0'; st.className = 'pill soft';
-    label();
   };
   const paint = (k, over) => {
     ms.forEach((c, x) => c.className = 'tl' + (x >= j && x < j + k ? ' on' : k < over && x === j + k ? ' miss' : ''));
@@ -259,7 +260,7 @@ function runSlide(t, b, i) {
       rec[j].textContent = k;
       rec.forEach((x, y) => x.className = y <= j && +x.textContent === best && best > 1 ? 'hit' : '');
       st.textContent = `위치 ${j}: ${k}칸 일치 · 최댓값 ${best}칸`; st.className = 'pill';
-      j++; label();
+      j++;
       if (then) then();
     };
     if (d) later(show, d); else show();
@@ -270,16 +271,27 @@ function runSlide(t, b, i) {
     if (j === n) { later(() => { if (alive() && autoOn) { reset(); play(); } }, 1800); return; }
     step(() => later(play, calm ? 600 : 520));
   };
-  bAuto.addEventListener('click', () => { autoOn = !autoOn; stop(); label(); if (autoOn) play(); });
-  bStep.addEventListener('click', () => { autoOn = false; stop(); if (j === n) reset(); else step(null, 0); label(); });
-  bReset.addEventListener('click', () => { stop(); reset(); if (autoOn) play(); });
-  reset();
+  const pause = () => { autoOn = false; stop(); playIcon(); };
+  ctl = {
+    toggle() { autoOn = !autoOn; stop(); playIcon(); if (autoOn) play(); },
+    fwd() { pause(); step(null, 0); },
+    back() {
+      pause();
+      if (j <= 1) { reset(); return; }
+      // 마지막 기록 하나를 지우고 그 앞 위치를 다시 표시
+      rec[j - 1].textContent = ''; rec[j - 1].className = '';
+      j -= 2;
+      best = Math.max(0, ...rec.slice(0, j).map(x => +x.textContent || 0));
+      step(null, 0);
+    }
+  };
+  reset(); playIcon();
   if (autoOn) play();
 }
 const slide = (b, i) => () => {
-  const t = ++tok;
+  const t = ++tok; slideOn = true;
   setTimeout(() => runSlide(t, b, i), 80);
-  return { W: SW, H: PY + 256, items: [{ id: 'sl', x: PX, y: PY, html: slideHTML(b, i) }] };
+  return { W: SW, H: PY + 206, items: [{ id: 'sl', x: PX, y: PY, html: slideHTML(b, i) }] };
 };
 
 // 4. 모든 쌍 표: 채우는 순서 = 코드의 for문 순서
@@ -319,6 +331,13 @@ const result = () => {
 };
 const seg = best.map(x => `${x.m.tag} ${x.j}~${x.j + L - 1}번 칸`).join(', ');
 
+// 하단 재생 버튼: 이동 그림 단계에서만 보임
+const media = document.getElementById('media');
+const syncMedia = () => { media.hidden = !(slideOn && !document.getElementById('fit').hidden); };
+document.getElementById('m-play').addEventListener('click', () => ctl && ctl.toggle());
+document.getElementById('m-fwd').addEventListener('click', () => ctl && ctl.fwd());
+document.getElementById('m-back').addEventListener('click', () => ctl && ctl.back());
+
 startPage({
   W: 700,
   next: { href: 'sorted.html', label: '다음 방식: 정렬 배열' },
@@ -329,7 +348,7 @@ startPage({
       { title: '입력 1번 칸을 블록 2번 칸에 맞추면 4칸 연속 일치', desc: ['입력 1번 칸과 블록 2번 칸이 새 시작 칸이라 ●로 봄', '그 뒤 번호 3, 5, 3이 모두 같아 4칸 일치', '그래서 입력과 원곡의 시작이 달라도 일치 구간을 찾음'], draw: still(() => pair(1, 2)) }
     ] },
     { phase: '검색', label: '한 칸씩 이동', title: '입력을 원곡 맨 앞에 맞추고 한 칸씩 뒤로 옮기며 비교', frames: [
-      { title: '입력 전체로 원곡 맨 앞부터 끝까지 비교', desc: ['위치마다 입력 첫 칸부터 번호 비교, 원곡 쪽 맞춘 칸은 시작 칸(●)으로 봄', '다른 번호가 나오면 멈춤', '맞은 칸 수를 아래에 기록하고, 맞든 틀리든 한 칸 뒤로', '원곡 끝을 넘는 입력 칸은 비교하지 않음 (흐린 칸)', '아래 버튼으로 자동 이동을 끄고 한 칸씩 옮겨 볼 수 있음'], draw: slide(0, 0) },
+      { title: '입력 전체로 원곡 맨 앞부터 끝까지 비교', desc: ['위치마다 입력 첫 칸부터 번호 비교, 원곡 쪽 맞춘 칸은 시작 칸(●)으로 봄', '다른 번호가 나오면 멈춤', '맞은 칸 수를 아래에 기록하고, 맞든 틀리든 한 칸 뒤로', '원곡 끝을 넘는 입력 칸은 비교하지 않음 (흐린 칸)', '아래 재생 버튼으로 멈추고, 앞·뒤 버튼으로 한 칸씩 이동'], draw: slide(0, 0) },
       { title: '입력 맨 앞 1칸을 떼고 다시 원곡 맨 앞부터', desc: ['남은 입력 4칸으로 같은 과정 반복, 입력 1번 칸이 새 시작 칸(●)', '원곡 2번 위치에서 4칸 연속 일치'], draw: slide(0, 1) },
       { title: '입력 맨 앞 2칸을 떼고 다시 원곡 맨 앞부터', desc: '남은 입력 3칸으로 같은 과정 반복.', draw: slide(0, 2) },
       { title: '입력 맨 앞 3칸을 떼고 다시 원곡 맨 앞부터', desc: '남은 입력 2칸으로 같은 과정 반복.', draw: slide(0, 3) },
@@ -349,6 +368,10 @@ startPage({
     codeStep('01_linear_array.py', 'py')
   ]
 });
+syncMedia();
+// 단계 이동은 클릭·방향키로 일어나고 그리기는 그 자리에서 끝나므로, 그 뒤에 버튼 표시를 맞춤
+document.addEventListener('click', syncMedia);
+document.addEventListener('keydown', syncMedia);
 }
 </script>
 </body>
