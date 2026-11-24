@@ -40,7 +40,7 @@
 .leg i.box{width:14px;height:14px;border-radius:3px}
 .leg i.box.py{opacity:.35}
 .leg .lin{background:var(--mute)}.leg .sor{background:var(--ink)}.leg .has{background:var(--blue)}
-.leg .plain{background:var(--sub)}
+.leg .plain{background:var(--sub)}.leg .dat{background:var(--sub)}
 svg .ax{font:500 12px "IBM Plex Sans KR",sans-serif;fill:var(--mute)}
 svg .ttl{font:700 14px "IBM Plex Sans KR",sans-serif;fill:var(--ink)}
 svg .val{font:600 11px "IBM Plex Sans KR",sans-serif;fill:var(--sub)}
@@ -51,6 +51,7 @@ svg .ln{fill:none;stroke-width:2.2;stroke-linejoin:round}
 svg .ln.lin{stroke:var(--mute)}svg .ln.sor{stroke:var(--ink)}svg .ln.has{stroke:var(--blue)}
 svg .pt{stroke:var(--card);stroke-width:1.5}
 svg .pt.lin,svg .bar.lin{fill:var(--mute)}svg .pt.sor,svg .bar.sor{fill:var(--ink)}svg .pt.has,svg .bar.has{fill:var(--blue)}
+svg .bar.dat{fill:var(--sub)}
 svg .bar.py{fill-opacity:.35}
 svg .hit{fill:transparent}
 .doc section h3.g{margin-top:22px}
@@ -126,6 +127,15 @@ svg .hit{fill:transparent}
       <li>해시가 구축에 더 쓴 1.2초(C++)를 검색으로 되찾으려면 없는 곡 기준 약 11만 번 검색 필요. 검색이 적으면 정렬 배열이 유리.</li>
     </ul>
   </section>
+
+  <section id="g-mem">
+    <h2>메모리 사용량 (100만 항목)</h2>
+    <p class="leg"><span><i class="box dat"></i>원곡 데이터</span><span><i class="box sor"></i>정렬 배열 색인</span><span><i class="box has"></i>체이닝 해시 색인</span><span><i class="box plain"></i>C++</span><span><i class="box plain py"></i>Python</span><span style="color:var(--mute);font-weight:500">로그 눈금 · 원곡 데이터는 프로세스 메모리(RSS), 색인은 C++ 힙·Python getsizeof</span></p>
+    <figure id="c-mem"></figure>
+    <ul>
+      <li>원곡 데이터·정렬 배열은 C++가 <code>vector&lt;int&gt;</code>(값만 4바이트), Python이 <code>list</code>(칸마다 포인터 8바이트 + int 객체)를 써서 Python이 3~9배 크고, 해시는 Python도 <code>array("i")</code>를 써서 C++와 같음.</li>
+    </ul>
+  </section>
 </main>
 </div>
 </div>
@@ -135,13 +145,13 @@ svg .hit{fill:transparent}
 const D = {"cpp": {"search": {"in": {"linear": [8.21, 24.3, 54.5, 96.4, 223.0, 491.0, 891.0, 1624.0, 3837.0, 7915.0], "sorted": [0.273, 0.246, 0.291, 0.406, 0.372, 0.42, 0.303, 0.371, 0.395, 0.538], "hash": [0.769, 0.764, 1.03, 0.927, 0.865, 0.942, 0.644, 0.702, 0.793, 0.833]}, "var": {"linear": [13.6, 28.2, 69.3, 174.0, 318.0, 724.0, 1304.0, 2417.0, 6522.0, 12769.0], "sorted": [1.12, 1.27, 1.35, 1.79, 1.88, 2.35, 1.8, 2.01, 2.49, 3.26], "hash": [0.925, 0.788, 1.13, 1.0, 0.993, 1.17, 0.768, 0.888, 1.0, 1.04]}, "out": {"linear": [16.9, 34.7, 84.9, 236.0, 389.0, 830.0, 1479.0, 2854.0, 7947.0, 14282.0], "sorted": [54.8, 47.2, 42.5, 6.72, 11.2, 15.0, 12.0, 14.5, 28.7, 39.5], "hash": [41.8, 36.0, 31.3, 5.29, 8.79, 10.6, 10.5, 11.1, 21.9, 28.5]}}, "build": {"sorted": [0.125, 0.263, 0.795, 1.66, 3.84, 10.5, 16.3, 36.5, 99.5, 226.0], "hash": [0.485, 0.92, 3.33, 6.66, 14.5, 52.5, 83.4, 205.0, 709.0, 1414.0]}}, "py": {"search": {"in": {"linear": [1715.0, 4107.0, 12405.0, 21188.0, 43399.0, 97939.0, 210855.0, 386468.0, 902182.0, 1905577.0], "sorted": [20.8, 19.1, 21.6, 29.3, 23.7, 28.5, 26.2, 27.7, 29.8, 32.7], "hash": [30.6, 28.5, 32.0, 35.4, 29.9, 34.3, 29.4, 30.2, 28.6, 31.4]}, "var": {"linear": [2717.0, 5807.0, 15824.0, 30628.0, 61427.0, 149886.0, 304850.0, 567235.0, 1418444.0, 2867465.0], "sorted": [98.8, 101.0, 104.0, 117.0, 117.0, 145.0, 153.0, 164.0, 252.0, 194.0], "hash": [33.7, 32.2, 33.1, 36.4, 32.9, 35.9, 32.2, 35.5, 33.5, 33.5]}, "out": {"linear": [3666.0, 7454.0, 18677.0, 38187.0, 76315.0, 182994.0, 371561.0, 694343.0, 1708575.0, 3510526.0], "sorted": [1288.0, 1111.0, 570.0, 184.0, 258.0, 331.0, 402.0, 361.0, 668.0, 627.0], "hash": [736.0, 680.0, 318.0, 62.6, 105.0, 114.0, 121.0, 122.0, 226.0, 262.0]}}, "build": {"sorted": [6.0, 10.9, 32.8, 80.0, 199.0, 547.0, 1477.0, 2629.0, 10588.0, 16495.0], "hash": [15.4, 32.1, 73.9, 147.0, 302.0, 924.0, 2142.0, 3840.0, 10985.0, 21207.0]}}};
 const NS = [1e3, 2e3, 5e3, 1e4, 2e4, 5e4, 1e5, 2e5, 5e5, 1e6];
 const NL = ['1천', '2천', '5천', '1만', '2만', '5만', '10만', '20만', '50만', '100만'];
-const M = ['linear', 'sorted', 'hash'], TONE = { linear: 'lin', sorted: 'sor', hash: 'has' };
-const NAME = { linear: '순차 배열', sorted: '정렬 배열', hash: '체이닝 해시' }, LANG = { cpp: 'C++', py: 'Python' };
+const M = ['linear', 'sorted', 'hash'], TONE = { linear: 'lin', sorted: 'sor', hash: 'has', data: 'dat' };
+const NAME = { linear: '순차 배열', sorted: '정렬 배열', hash: '체이닝 해시', data: '원곡 데이터' }, LANG = { cpp: 'C++', py: 'Python' };
 const p3 = v => +v.toPrecision(3);
 const tfmt = us => us >= 1e6 ? p3(us / 1e6) + '초' : us >= 1e3 ? p3(us / 1e3) + 'ms' : us >= 1 ? p3(us) + 'µs' : p3(us * 1e3) + 'ns';
 const tick = us => us >= 1e6 ? us / 1e6 + '초' : us >= 1e3 ? us / 1e3 + 'ms' : us >= 1 ? us + 'µs' : Math.round(us * 1e3) + 'ns';
 const range = vals => [Math.floor(Math.log10(Math.min(...vals))), Math.ceil(Math.log10(Math.max(...vals)))];
-const yAxis = (s, y, lo, hi, L, R, W) => { for (let e = lo; e <= hi; e++) { const v = 10 ** e, yy = y(v); s.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}"/><text class="ax" x="${L - 8}" y="${yy + 4}" text-anchor="end">${tick(v)}</text>`); } };
+const yAxis = (s, y, lo, hi, L, R, W, tk = tick) => { for (let e = lo; e <= hi; e++) { const v = 10 ** e, yy = y(v); s.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}"/><text class="ax" x="${L - 8}" y="${yy + 4}" text-anchor="end">${tk(v)}</text>`); } };
 
 // 데이터 크기별 꺾은선: 가로 N(로그), 세로 시간(로그). lo·hi = 세로축 10의 지수(µs 기준)
 function line(id, lang, type, lo, hi) {
@@ -172,14 +182,15 @@ function bars(id, groups, label, o = {}) {
   let W = L + PAD + R + PAD, xs = [];
   groups.forEach((g, gi) => { const n = g[1].length / 2; xs.push(W - R - PAD); W += n * (2 * BW + IN) + (n - 1) * MG + (gi < groups.length - 1 ? GG : 0); });
   const y = v => T + (hi - Math.log10(v)) / (hi - lo) * (H - T - B), s = [];
-  yAxis(s, y, lo, hi, L, R, W);
+  const vf = o.fmt || tfmt;
+  yAxis(s, y, lo, hi, L, R, W, o.tick || tick);
   groups.forEach((g, gi) => {
-    let x = xs[gi] + (gi ? 0 : 0);
+    let x = xs[gi];
     const start = x;
     g[1].forEach((b, k) => {
       const [nm, m, lang, v] = b, yy = y(v), h = H - B - yy;
-      s.push(`<g><rect class="bar ${TONE[m]} ${lang}" x="${x}" y="${yy.toFixed(1)}" width="${BW}" height="${h.toFixed(1)}" rx="3"/><rect class="hit" x="${x}" y="${T}" width="${BW}" height="${H - B - T}"><title>${LANG[lang]} · ${NAME[m]} · ${tfmt(v)}</title></rect></g>`);
-      if (label) s.push(`<text class="val" x="${x + BW / 2}" y="${yy - 6}" text-anchor="middle">${tfmt(v)}</text>`);
+      s.push(`<g><rect class="bar ${TONE[m]} ${lang}" x="${x}" y="${yy.toFixed(1)}" width="${BW}" height="${h.toFixed(1)}" rx="3"/><rect class="hit" x="${x}" y="${T}" width="${BW}" height="${H - B - T}"><title>${LANG[lang]} · ${NAME[m]} · ${vf(v)}</title></rect></g>`);
+      if (label) s.push(`<text class="val" x="${x + BW / 2}" y="${yy - 6}" text-anchor="middle">${vf(v)}</text>`);
       x += BW + (k % 2 ? MG : IN);
     });
     s.push(`<text class="grp" x="${(start + x - MG) / 2}" y="${H - B + 24}" text-anchor="middle">${g[0]}</text>`);
@@ -192,6 +203,11 @@ bars('c-type', [['수록곡', 'in'], ['변형', 'var'], ['미수록곡', 'out']]
   [g, M.flatMap(m => ['cpp', 'py'].map(l => [g, m, l, last(D[l].search[t][m])]))]), true);
 bars('c-build', [['정렬 배열', 'sorted'], ['체이닝 해시', 'hash']].map(([g, m]) =>
   [g, ['cpp', 'py'].map(l => [g, m, l, last(D[l].build[m]) * 1000])]), true, { bw: 56, in: 6, gg: 120 });
+const MEM = { cpp: { data: 40.4, sorted: 4.00, hash: 327 }, py: { data: 135, sorted: 36.3, hash: 327 } };   // MB, 결과표 100만
+const mfmt = mb => mb >= 1000 ? p3(mb / 1000) + 'GB' : mb >= 1 ? p3(mb) + 'MB' : p3(mb * 1000) + 'KB';
+const mtick = mb => mb >= 1000 ? mb / 1000 + 'GB' : mb >= 1 ? mb + 'MB' : mb * 1000 + 'KB';
+bars('c-mem', [['원곡 데이터', 'data'], ['정렬 배열 색인', 'sorted'], ['체이닝 해시 색인', 'hash']].map(([g, m]) =>
+  [g, ['cpp', 'py'].map(l => [g, m, l, MEM[l][m]])]), true, { bw: 56, in: 6, gg: 120, fmt: mfmt, tick: mtick });
 }
 </script>
 </body>
