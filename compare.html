@@ -28,7 +28,7 @@
 .hb .k{font-size:15px;font-weight:600;color:var(--sub)}
 .hb .tr{height:30px;border-radius:9px;background:var(--fill);overflow:hidden}
 .hb .tr i{display:block;height:100%;border-radius:9px}
-.hb .tr i.sor{background:var(--ink)}.hb .tr i.has{background:var(--blue)}
+.hb .tr i.sor{background:var(--ink)}.hb .tr i.py{opacity:.45}.hb .tr i.has{background:var(--blue)}
 .hb .tr i.ram{background:transparent;border:2px dashed var(--mute);box-sizing:border-box}
 .hb .v{font-size:17px;font-weight:700;text-align:right}
 .why{display:grid;gap:8px;margin:6px 0 14px}
@@ -55,7 +55,7 @@
 <div class="content">
 <main class="doc">
   <h1>세 방식 비교</h1>
-  <p class="lead">결과표의 실측값(C++, 100만 항목)으로 정리한 결론과 선택 기준. 데이터 크기별 그래프와 전체 숫자는 결과표에 있음.</p>
+  <p class="lead">결과표의 실측값(C++·Python, 100만 항목)으로 정리한 결론과 선택 기준. 데이터 크기별 그래프와 전체 숫자는 결과표에 있음.</p>
 
   <section id="summary">
     <h2>결론: 가장 빠른 방식은 입력에 따라 다르고, 균형은 <mark>정렬 배열</mark></h2>
@@ -67,15 +67,15 @@
     <h2>해시의 <mark>치명적 맹점</mark>: 메모리</h2>
     <div class="why">
       <div><b><i class="dot sor"></i>정렬 배열: 시작 위치 하나에 숫자 하나</b>
-        <p>조각 내용은 복사하지 않고 시작 위치 번호(4바이트)만 저장. 100만 항목이면 약 4MB.</p></div>
+        <p>조각 내용은 복사하지 않고 시작 위치 번호만 저장. C++는 번호 하나에 4바이트라 100만 항목이면 4.0MB. Python은 <code>list</code>라 칸마다 주소(8바이트)와 숫자 객체가 따로 있어 36.3MB(약 9배).</p></div>
       <div><b><i class="dot has"></i>체이닝 해시: 시작 위치 하나에 조각 최대 32개</b>
-        <p>입력과 몇 칸 일치할지 몰라 길이 1~32 표를 모두 만들고, 항목마다 해시값과 시작 위치(합 8바이트)를 저장. 같은 위치가 길이별로 최대 32번 들어가 100만 항목이면 약 327MB.</p></div>
+        <p>입력과 몇 칸 일치할지 몰라 길이 1~32 표를 모두 만들고, 항목마다 해시값과 시작 위치(합 8바이트)를 저장. 같은 위치가 길이별로 최대 32번 들어가 100만 항목이면 약 327MB. Python도 값만 붙여 저장하는 <code>array("i")</code>를 써서 C++와 같음.</p></div>
     </div>
     <h3>전체 데이터(3,048만 항목)를 올리면</h3>
     <div class="fig" id="f-full"></div>
     <ul>
       <li>100만 항목 측정값을 전체 데이터 크기로 비례 계산한 값.</li>
-      <li>해시 색인만 약 10GB라 실험 PC 메모리(3.9GB)에 올릴 수 없음. 그래서 실험은 100만 항목까지.</li>
+      <li>해시 색인만 C++·Python 모두 약 10GB라 실험 PC 메모리(3.9GB)에 올릴 수 없음. 그래서 실험은 100만 항목까지.</li>
       <li>보완책: 검사할 길이의 조각만 그때그때 저장. 메모리는 1/32 수준이 되지만 검색마다 색인을 다시 만들어야 해서 검색이 느려짐.</li>
     </ul>
   </section>
@@ -126,21 +126,27 @@ const row = (label, key, vals, fmt) => {
   const ok = vals.filter(v => v != null), best = Math.min(...ok);
   return `<tr><td>${label}${key ? `<span class="key">${key}</span>` : ''}</td>${vals.map(v => v == null ? '<td class="na">없음</td>' : `<td class="${v === best ? 'best' : ''}">${fmt(v)}</td>`).join('')}</tr>`;
 };
-const sr = t => M.map(m => last(C.search[t][m]));
-$('f-summary').innerHTML = `<table class="tbl">
-  <tr><th>C++ · 100만 항목</th>${M.map(m => `<th>${nm(m)}</th>`).join('')}</tr>
+const block = (lang, X, mem) => {
+  const sr = t => M.map(m => last(X.search[t][m]));
+  return `<tr><th colspan="4" style="text-align:left;height:40px;color:var(--ink);font-size:15px">${lang}</th></tr>
   ${row('검색', TYPE.in, sr('in'), tfmt)}
   ${row('검색', TYPE.var, sr('var'), tfmt)}
   ${row('검색', TYPE.out, sr('out'), tfmt)}
-  ${row('구축', '검색 전 한 번', [null, last(C.build.sorted) * 1e3, last(C.build.hash) * 1e3], tfmt)}
-  ${row('색인 메모리', '', [null, MEM.cpp.sorted, MEM.cpp.hash], mbfmt)}
+  ${row('구축', '검색 전 한 번', [null, last(X.build.sorted) * 1e3, last(X.build.hash) * 1e3], tfmt)}
+  ${row('색인 메모리', '', [null, mem.sorted, mem.hash], mbfmt)}`;
+};
+$('f-summary').innerHTML = `<table class="tbl">
+  <tr><th>100만 항목</th>${M.map(m => `<th>${nm(m)}</th>`).join('')}</tr>
+  ${block('C++', C, MEM.cpp)}
+  ${block('Python', P, MEM.py)}
 </table>`;
-const bS = last(C.build.sorted), bH = last(C.build.hash);
+const bS = last(C.build.sorted), bH = last(C.build.hash), pS = last(P.build.sorted), pH = last(P.build.hash);
 $('sum-text').innerHTML = `
-  <li>가장 빠른 검색은 입력 종류에 따라 다름. DB에 있는 곡은 <b>정렬 배열</b>(${tfmt(last(C.search.in.sorted))}), 변형·없는 곡은 <b>체이닝 해시</b>가 가장 빠름.</li>
-  <li>해시는 정렬 배열보다 구축이 <b>${times(bH / bS)}</b>(${tfmt(bS * 1e3)} 대 ${tfmt(bH * 1e3)}), 색인 메모리가 <b>약 ${times(MEM.cpp.hash / MEM.cpp.sorted)}</b>(${mbfmt(MEM.cpp.sorted)} 대 ${mbfmt(MEM.cpp.hash)}).</li>
-  <li>순차 배열은 준비가 필요 없지만, 100만 항목에서 검색 한 번이 ${tfmt(last(C.search.in.linear))}~${tfmt(last(C.search.out.linear))}로 색인 방식의 수백~수만 배.</li>
-  <li>그래서 대부분의 상황에서는 구축과 메모리가 가볍고 검색도 충분히 빠른 정렬 배열이 가장 균형 잡힌 선택.</li>`;
+  <li>가장 빠른 검색은 입력 종류에 따라 다름. C++는 DB에 있는 곡은 <b>정렬 배열</b>(${tfmt(last(C.search.in.sorted))}), 변형·없는 곡은 <b>체이닝 해시</b>가 가장 빠름.</li>
+  <li>Python은 세 입력 모두 <b>체이닝 해시</b>가 가장 빠름. 다만 DB에 있는 곡은 ${tfmt(last(P.search.in.hash))} 대 ${tfmt(last(P.search.in.sorted))}로 정렬 배열과 거의 같음.</li>
+  <li>해시는 정렬 배열보다 구축이 C++ <b>${times(bH / bS)}</b>·Python <b>${times(pH / pS)}</b>, 색인 메모리가 C++ <b>약 ${times(MEM.cpp.hash / MEM.cpp.sorted)}</b>·Python <b>약 ${times(MEM.py.hash / MEM.py.sorted)}</b>.</li>
+  <li>순차 배열은 준비가 필요 없지만, 100만 항목에서 검색 한 번이 C++ ${tfmt(last(C.search.in.linear))}~${tfmt(last(C.search.out.linear))}, Python ${tfmt(last(P.search.in.linear))}~${tfmt(last(P.search.out.linear))}로 색인 방식보다 훨씬 느림.</li>
+  <li>그래서 두 언어 모두 메모리가 가볍고 검색도 충분히 빠른 정렬 배열이 가장 균형 잡힌 선택.</li>`;
 
 // ---------- 메모리 맹점: 전체 데이터로 비례 계산 ----------
 const scale = FULL / 1e6;
@@ -149,16 +155,17 @@ const bars = rows => {
   return `<div class="hb">${rows.map(([k, v, cls]) =>
     `<span class="k">${k}</span><span class="tr"><i class="${cls}" style="width:${Math.max(v / max * 100, 1)}%"></i></span><span class="v">${mbfmt(v)}</span>`).join('')}</div>`;
 };
-$('f-full').innerHTML = `<p class="cap">전체 3,048만 항목일 때 색인 메모리 (C++)</p>` + bars([
+$('f-full').innerHTML = `<p class="cap">전체 3,048만 항목일 때 색인 메모리</p>` + bars([
   ['실험 PC 메모리', RAM_GB * 1000, 'ram'],
-  [nm('sorted'), MEM.cpp.sorted * scale, 'sor'],
-  [nm('hash'), MEM.cpp.hash * scale, 'has']
+  [nm('sorted') + ' C++', MEM.cpp.sorted * scale, 'sor'],
+  [nm('sorted') + ' Python', MEM.py.sorted * scale, 'sor py'],
+  [nm('hash') + ' C++·Python', MEM.cpp.hash * scale, 'has']
 ]);
 
 $('f-pick').innerHTML = `
-  <div><p>DB가 작음. C++에서 2천 항목까지는 색인 없이 전부 비교하는 쪽이 가장 빠르고, 색인 메모리도 0</p><b>${nm('linear')}</b></div>
-  <div class="on"><p>보통의 경우. DB에 있는 곡을 주로 찾거나(${tfmt(last(C.search.in.sorted))}로 가장 빠름), 메모리가 넉넉하지 않음(색인 ${mbfmt(MEM.cpp.sorted)})</p><b>${nm('sorted')}</b></div>
-  <div><p>변형·없는 곡을 주로 찾고(${tfmt(last(C.search.var.hash))}, ${tfmt(last(C.search.out.hash))}로 가장 빠름), 색인 ${mbfmt(MEM.cpp.hash)}를 감당할 메모리가 있음</p><b>${nm('hash')}</b></div>`;
+  <div><p>DB가 작음. C++에서는 2천 항목까지 색인 없이 전부 비교하는 쪽이 가장 빠르고 색인 메모리도 0 (Python에서는 해당 없음)</p><b>${nm('linear')}</b></div>
+  <div class="on"><p>보통의 경우. 메모리가 넉넉하지 않음(색인 C++ ${mbfmt(MEM.cpp.sorted)}, Python ${mbfmt(MEM.py.sorted)}). DB에 있는 곡은 C++에서 가장 빠르고(${tfmt(last(C.search.in.sorted))}) Python에서도 해시와 거의 같음(${tfmt(last(P.search.in.sorted))})</p><b>${nm('sorted')}</b></div>
+  <div><p>변형·없는 곡을 주로 찾고(C++ ${tfmt(last(C.search.var.hash))}·${tfmt(last(C.search.out.hash))}, Python ${tfmt(last(P.search.var.hash))}·${tfmt(last(P.search.out.hash))}로 가장 빠름), 색인 ${mbfmt(MEM.cpp.hash)}를 감당할 메모리가 있음</p><b>${nm('hash')}</b></div>`;
 
 // ---------- Python이 느린 이유 ----------
 const r = (t, m) => last(P.search[t][m]) / last(C.search[t][m]);
