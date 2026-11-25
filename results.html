@@ -52,6 +52,7 @@ svg .end.lin{fill:var(--mute)}svg .end.sor{fill:var(--ink)}svg .end.has{fill:var
 svg .ax{font:500 12px "IBM Plex Sans KR",sans-serif;fill:var(--mute)}
 svg .ttl{font:700 14px "IBM Plex Sans KR",sans-serif;fill:var(--ink)}
 svg .val{font:600 11px "IBM Plex Sans KR",sans-serif;fill:var(--sub)}
+svg .rat{font:700 13px "IBM Plex Sans KR",sans-serif;fill:var(--blue-ink)}
 svg .grp{font:700 13px "IBM Plex Sans KR",sans-serif;fill:var(--ink)}
 svg .grid{stroke:var(--line);stroke-width:1}
 svg .grid2{stroke:var(--line);stroke-width:1;stroke-dasharray:2 4;opacity:.7}
@@ -119,15 +120,15 @@ svg .zt{font:600 12px "IBM Plex Sans KR",sans-serif;fill:var(--blue-ink)}
     <div class="charts"><figure id="c-in-cpp"></figure><figure id="c-in-py"></figure></div>
     <ul>
       <li><b>순차 배열</b>: 데이터 규모에 비례하여 검색 시간이 증가함.</li>
-      <li><b>정렬 배열·체이닝 해시</b>: 데이터가 100만 개까지 증가해도 검색 시간이 거의 일정함. C++는 정렬 배열이 가장 빠르고(0.54µs), Python은 두 방식이 유사함(약 30µs).</li>
+      <li><b>정렬 배열·체이닝 해시</b>: 데이터 규모가 100만 항목까지 증가해도 검색 시간의 증가폭이 작음. C++는 정렬 배열이 가장 빠르고(0.54µs), Python은 두 방식의 성능이 유사함(약 30µs).</li>
     </ul>
     <h3 class="g">DB에 없는 곡 (미수록곡)</h3>
     <div class="charts"><figure id="c-out-cpp"></figure><figure id="c-out-py"></figure></div>
     <ul>
       <li><b>순차 배열</b>: 데이터 규모에 비례하여 검색 시간이 증가함.</li>
-      <li><b>정렬 배열·체이닝 해시</b>: 두 언어 모두 1천~5천 항목에서 1만 항목보다 검색 시간이 길며, 체이닝 해시가 정렬 배열보다 조금 빠름.</li>
+      <li><b>정렬 배열·체이닝 해시</b>: 두 언어 모두 1천~5천 항목에서 1만 항목보다 검색 시간이 길며, 체이닝 해시가 정렬 배열보다 더 빠름.</li>
       <li><b>원인</b>: 데이터가 적을 때는 최장 일치 길이가 짧아 비교 후보가 많음(약 2,100쌍). 1만 항목부터는 최장 일치 길이가 증가하면서 후보 수가 50~300쌍으로 감소.</li>
-      <li><b>2천 항목 이하(점선 박스)</b>: C++는 단순 반복이 빨라 순차 배열이 가장 빠르지만, Python은 반복 연산의 부담이 커 비교 횟수를 줄이는 색인 기반 검색이 더 빠름. 언어별 연산 비용에 따라 효율적인 자료구조가 달라질 수 있음.</li>
+      <li><b>2천 항목 이하(점선 박스)</b>: C++는 단순 반복 연산이 빨라 순차 배열이 유리하지만, Python은 반복 연산의 오버헤드가 커 색인 기반 검색이 더 빠름. 언어별 연산 비용에 따라 자료구조의 상대적 효율성이 달라질 수 있음.</li>
     </ul>
   </section>
 
@@ -143,11 +144,11 @@ svg .zt{font:600 12px "IBM Plex Sans KR",sans-serif;fill:var(--blue-ink)}
         <tr><td><i class="dot has"></i>체이닝 해시</td><td>평균 O(1)</td><td>1배</td><td>1.08배</td><td>1.03배</td></tr>
       </tbody>
     </table>
-    <p class="gt-note">1천 항목 대비 100만 항목에서의 검색 시간 증가율. 이론적 증가율은 각 복잡도의 대표 함수를 기준으로 산출함.</p>
+    <p class="gt-note">1천 항목 대비 100만 항목에서의 검색 시간 증가율. 이론적 증가율은 각 복잡도의 대표 함수를 기준으로 산출함. 체이닝 해시의 평균 O(1)은 입력 길이가 고정되고 해시값이 칸에 고르게 분포한다는 조건에서의 탐색 비용으로, 부분 조각 해시 계산·충돌 확인·결과 반환 비용까지 항상 O(1)이라는 의미는 아님.</p>
     <ul>
-      <li><b>이론과 실측의 차이</b>: 세 방식 모두 이론과 유사한 증가 양상을 보임. 다만 C++에서는 정렬 배열이 체이닝 해시보다 실제 검색 시간이 짧음. 정렬 배열은 입력 전체가 일치하면 추가 길이 탐색이 불필요하지만, 체이닝 해시는 입력 멜로디의 부분 조각에 대한 해시값을 매 검색 시 사전에 계산하는 오버헤드가 발생함.</li>
-      <li><b>검색 시간의 변동</b>: 데이터 규모별로 서로 다른 50개의 질의를 사용하므로, 질의마다 비교 후보 수와 일치 곡 수가 달라 검색 시간이 변동할 수 있음.</li>
-      <li><b>DB에 없는 곡</b>: 정렬 배열과 체이닝 해시는 소규모 데이터에서 오히려 검색 시간이 길어 이론과 다른 양상을 보임.</li>
+      <li><b>이론과 실측의 차이</b>: 세 방식 모두 이론과 유사한 증가 양상을 보임. 다만 C++에서는 정렬 배열이 체이닝 해시보다 빠름. 정렬 배열은 전체 일치 시 추가 길이 탐색이 불필요하지만, 체이닝 해시는 입력 멜로디의 부분 조각별 해시값을 사전에 계산하는 오버헤드가 발생하기 때문으로 분석됨.</li>
+      <li><b>검색 시간의 변동</b>: 데이터 규모별로 서로 다른 50개의 질의를 사용함. 질의별 비교 후보 수와 일치 곡 수의 차이로 검색 시간이 변동할 수 있음.</li>
+      <li><b>미수록곡</b>: 정렬 배열과 체이닝 해시는 소규모 데이터에서 오히려 검색 시간이 길어 이론과 다른 양상을 보임.</li>
     </ul>
   </section>
 
@@ -159,7 +160,7 @@ svg .zt{font:600 12px "IBM Plex Sans KR",sans-serif;fill:var(--blue-ink)}
     <ul>
       <li><b>구축 시간</b>: 체이닝 해시는 정렬 배열보다 구축 시간이 길게 나타남(C++ 6.3배, Python 1.3배).</li>
       <li><b>원인</b>: 정렬 배열은 각 항목의 시작 위치를 정렬하지만, 체이닝 해시는 DB 전체에 대해 길이 1~32의 부분 조각별 해시값 계산 및 버킷 구성이 필요함.</li>
-      <li><b>비용 대비 효율</b>: 검색 횟수가 적을 경우 구축 비용이 낮은 정렬 배열이 유리함. 반면 색인을 지속적으로 재사용하는 환경에서는 일회성 구축 비용의 상대적 중요도가 낮아지므로 검색 성능이 더 중요한 판단 기준이 됨.</li>
+      <li><b>비용 대비 효율</b>: 정렬 배열과 체이닝 해시를 비교할 때 검색 횟수가 적다면 구축 비용이 낮은 정렬 배열이 유리함. 반면 색인을 지속적으로 재사용하는 환경에서는 일회성 구축 비용의 상대적 중요도가 낮아짐.</li>
     </ul>
   </section>
 
@@ -175,7 +176,7 @@ svg .zt{font:600 12px "IBM Plex Sans KR",sans-serif;fill:var(--blue-ink)}
 
   <section id="g-type">
     <h2>언어별 성능 차이 (100만 항목 검색 시간)</h2>
-    <p class="leg"><span><i class="box lin"></i>순차 배열</span><span><i class="box sor"></i>정렬 배열</span><span><i class="box has"></i>체이닝 해시</span></p>
+    <p class="leg"><span><i class="box lin"></i>순차 배열</span><span><i class="box sor"></i>정렬 배열</span><span><i class="box has"></i>체이닝 해시</span><span style="color:var(--blue-ink);font-weight:600">막대 위 ×숫자 = Python ÷ C++</span></p>
     <figure id="c-type"></figure>
     <ul>
       <li>같은 데이터·같은 자료구조에서 Python이 C++보다 순차 배열 약 240배, 정렬 배열 16~61배, 체이닝 해시 9~38배 느림.</li>
@@ -292,7 +293,7 @@ theory('c-th'); growth('c-th-cpp', 'cpp'); growth('c-th-py', 'py');
 
 // 막대: groups = [[묶음 이름, [[막대 이름, 방식, 언어, 값(µs)], ...]], ...]
 function bars(id, groups, label, o = {}) {
-  const BW = o.bw || 24, IN = o.in || 3, MG = o.mg || 16, GG = o.gg || 56, L = 62, R = 18, T = 24, PH = 262, PAD = 16;
+  const BW = o.bw || 24, IN = o.in || 3, MG = o.mg || 16, GG = o.gg || 56, L = 62, R = 18, T = o.ratio ? 48 : 24, PH = 262, PAD = 16;
   const multi = groups.some(g => g[1].length > 2);   // 묶음 안에 방식이 여러 개면 막대 쌍마다 방식 이름 줄을 둠
   const B = multi ? 80 : 60, H = T + PH + B, base = T + PH;
   const vals = groups.flatMap(g => g[1].map(b => b[3])), [lo, hi] = range(vals);
@@ -310,6 +311,10 @@ function bars(id, groups, label, o = {}) {
       if (label) s.push(`<text class="val" x="${x + BW / 2}" y="${yy - 6}" text-anchor="middle">${vf(v)}</text>`);
       s.push(`<text class="lg ${lang}" x="${x + BW / 2}" y="${base + 16}" text-anchor="middle">${LANG[lang]}</text>`);
       if (k % 2 && multi) s.push(`<text class="mth" x="${(pair + x + BW) / 2}" y="${base + 34}" text-anchor="middle">${NAME[m]}</text>`);
+      if (k % 2 && o.ratio) {   // 쌍(C++, Python) 위에 Python ÷ C++ 배수
+        const a = g[1][k - 1][3], rr = v / a, top = Math.min(y(a), yy) - 26;
+        s.push(`<text class="rat" x="${(pair + x + BW) / 2}" y="${top.toFixed(1)}" text-anchor="middle">×${rr >= 10 ? Math.round(rr) : rr.toFixed(1)}</text>`);
+      }
       if (k % 2) pair = x + BW + MG;
       x += BW + (k % 2 ? MG : IN);
     });
@@ -320,7 +325,7 @@ function bars(id, groups, label, o = {}) {
 }
 const last = a => a[a.length - 1];
 bars('c-type', [['수록곡', 'in'], ['미수록곡', 'out']].map(([g, t]) =>
-  [g, M.flatMap(m => ['cpp', 'py'].map(l => [g, m, l, last(D[l].search[t][m])]))]), true, { bw: 40, in: 4, mg: 20, gg: 64 });
+  [g, M.flatMap(m => ['cpp', 'py'].map(l => [g, m, l, last(D[l].search[t][m])]))]), true, { bw: 40, in: 4, mg: 20, gg: 64 , ratio: true });
 bars('c-build', [['정렬 배열', 'sorted'], ['체이닝 해시', 'hash']].map(([g, m]) =>
   [g, ['cpp', 'py'].map(l => [g, m, l, last(D[l].build[m]) * 1000])]), true, { bw: 56, in: 6, gg: 120 });
 const MEM = { cpp: { data: 40.4, sorted: 4.00, hash: 327 }, py: { data: 135, sorted: 36.3, hash: 327 } };   // MB, 결과표 100만
