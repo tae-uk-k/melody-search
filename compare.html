@@ -15,16 +15,6 @@
 .dot.lin{background:var(--mute)}.dot.sor{background:var(--ink)}.dot.has{background:var(--blue)}
 .fig{margin:6px 0 14px;overflow-x:auto}
 .fig .cap{margin:0 0 6px;font-size:14px;font-weight:700;color:var(--mute)}
-.chart{display:block;width:100%;min-width:560px;height:auto}
-.chart text{font:600 13px "IBM Plex Sans KR",sans-serif;fill:var(--mute)}
-.chart .grid{stroke:var(--line);stroke-width:1}
-.chart .axis{stroke:var(--line);stroke-width:1.5}
-.chart .ser{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
-.chart .ser.lin{stroke:var(--mute)}.chart .ser.sor{stroke:var(--ink)}.chart .ser.has{stroke:var(--blue)}
-.chart .mk{stroke:var(--card);stroke-width:2.5}
-.chart .mk.sor{fill:var(--ink)}.chart .mk.has{fill:var(--blue)}
-.chart .lbl{font-size:14px;font-weight:700}
-.chart .lbl.lin{fill:var(--mute)}.chart .lbl.sor{fill:var(--ink)}.chart .lbl.has{fill:var(--blue-ink)}
 .tbl{width:100%;border-collapse:collapse;font-size:16px}
 .tbl th,.tbl td{height:50px;padding:0 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
 .tbl th{font-size:14px;font-weight:700;color:var(--sub)}
@@ -93,13 +83,11 @@
   <section id="choice">
     <h2>어떤 걸 고를까</h2>
 
-    <h3>준비 시간까지 합치면 언제 이득일까</h3>
-    <div class="fig" id="f-break"></div>
-    <ul id="break-text"></ul>
+    <p>구축은 검색 전에 한 번만 하면 되므로 선택 기준에서 제외. 남는 기준은 <b>어떤 입력을 주로 찾는지</b>와 <b>메모리 여유</b>.</p>
 
     <h3>상황에 맞는 선택</h3>
     <div class="pick" id="f-pick"></div>
-    <p>가장 빠른 자료구조가 항상 가장 좋은 선택은 아님. 입력 종류, 검색 횟수, 메모리 여유에 따라 달라짐.</p>
+    <p>가장 빠른 자료구조가 항상 가장 좋은 선택은 아님. 입력 종류와 메모리 여유에 따라 달라짐.</p>
   </section>
 
   <section id="lang">
@@ -167,60 +155,10 @@ $('f-full').innerHTML = `<p class="cap">전체 3,048만 항목일 때 색인 메
   [nm('hash'), MEM.cpp.hash * scale, 'has']
 ]);
 
-// ---------- 본전 계산 (DB에 없는 곡, 100만 항목, C++) ----------
-// 총 시간(ms) = 구축 + 검색 횟수 × 검색 1번
-const COST = {
-  linear: { b: 0, s: last(C.search.out.linear) / 1000 },
-  sorted: { b: bS, s: last(C.search.out.sorted) / 1000 },
-  hash:   { b: bH, s: last(C.search.out.hash) / 1000 }
-};
-const cross = (a, b, t = 'out') => {   // a보다 b가 빨라지는 검색 횟수 (b는 구축이 더 큰 쪽)
-  const s = k => last(C.search[t][k]) / 1000, bb = { linear: 0, sorted: bS, hash: bH };
-  return (bb[b] - bb[a]) / (s(a) - s(b));
-};
-const qSL = cross('linear', 'sorted'), qHL = cross('linear', 'hash'), qHS = cross('sorted', 'hash'), qHSvar = cross('sorted', 'hash', 'var');
-
-function chart(o) {
-  const w = 728, h = 330, L = 70, R = 118, T = 18, B = 40, lx = Math.log10;
-  const x0 = lx(o.xs[0]), x1 = lx(last(o.xs));
-  const X = v => L + (lx(v) - x0) / (x1 - x0) * (w - L - R);
-  const Y = v => T + (1 - (lx(v) - lx(o.ymin)) / (lx(o.ymax) - lx(o.ymin))) * (h - T - B);
-  let s = `<svg class="chart" viewBox="0 0 ${w} ${h}">`;
-  for (const [v, t] of o.yticks) s += `<line class="grid" x1="${L}" x2="${w - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 10}" y="${Y(v) + 4}" text-anchor="end">${t}</text>`;
-  for (const [v, t] of o.xticks) s += `<text x="${X(v)}" y="${h - B + 24}" text-anchor="middle">${t}</text>`;
-  s += `<line class="axis" x1="${L}" x2="${w - R}" y1="${h - B}" y2="${h - B}"/>`;
-  for (const se of o.series) {
-    const pts = o.xs.map(q => [X(q), Y(se.f(q))]);
-    s += `<path class="ser ${se.tone}" d="M${pts.map(p => p.map(n => n.toFixed(1)).join(' ')).join(' L')}"/>`;
-    const [px, py] = last(pts);
-    s += `<text class="lbl ${se.tone}" x="${px + 12}" y="${py + 5 + (se.ly || 0)}">${se.label}</text>`;
-  }
-  for (const m of o.marks) {
-    const px = X(m.x), py = Y(m.y);
-    s += `<circle class="mk ${m.tone}" cx="${px}" cy="${py}" r="7"/><text class="lbl ${m.tone}" x="${px + (m.dx || 0)}" y="${py + (m.dy || -16)}" text-anchor="${m.anchor || 'middle'}">${m.text}</text>`;
-  }
-  return s + '</svg>';
-}
-const Q = []; for (let e = 0; e <= 7; e += 0.25) Q.push(10 ** e);
-const tot = k => q => COST[k].b + q * COST[k].s;
-$('f-break').innerHTML = `<p class="cap">총 시간 = 구축 + 검색 횟수 × 검색 1번 (DB에 없는 곡, 100만 항목, C++)</p>` + chart({
-  xs: Q, xticks: [[1, '1번'], [100, '100번'], [1e4, '1만 번'], [1e6, '100만 번'], [1e7, '1천만 번']],
-  ymin: 10, ymax: 1e9, yticks: [[10, '10ms'], [1e3, '1초'], [6e4, '1분'], [3.6e6, '1시간'], [8.64e7, '1일']],
-  series: M.map(k => ({ f: tot(k), tone: TONE[k], label: NAME[k], ly: k === 'sorted' ? -8 : k === 'hash' ? 12 : 0 })),
-  marks: [
-    { x: qSL, y: tot('sorted')(qSL), tone: 'sor', text: Math.ceil(qSL) + '번', dy: 26 },
-    { x: qHS, y: tot('hash')(qHS), tone: 'has', text: tenK(qHS) + ' 번', dy: -16 }
-  ]
-});
-$('break-text').innerHTML = `
-  <li>정렬 배열은 구축에 ${tfmt(bS * 1e3)}가 들지만, 검색을 <b>${Math.ceil(qSL)}번</b> 넘게 하면 순차 배열보다 총 시간이 짧아짐.</li>
-  <li>해시가 정렬 배열보다 구축에 더 쓴 ${tfmt((bH - bS) * 1e3)}를 되찾으려면 없는 곡 기준 <b>${tenK(qHS)} 번</b> 검색 필요 (검색 1번에 ${tfmt(last(C.search.out.sorted) - last(C.search.out.hash))}씩 절약). 변형 곡 기준이면 ${tenK(qHSvar)} 번.</li>
-  <li>DB에 있는 곡만 찾는다면 정렬 배열이 구축도 검색도 빨라서 해시가 앞지를 수 없음.</li>`;
-
 $('f-pick').innerHTML = `
-  <div><p>DB가 작거나(C++ 2천 항목까지 순차 배열이 가장 빠름) 검색을 ${Math.ceil(qSL)}번도 안 함</p><b>${nm('linear')}</b></div>
-  <div class="on"><p>보통의 경우. 메모리가 넉넉하지 않거나, DB에 있는 곡을 주로 찾음</p><b>${nm('sorted')}</b></div>
-  <div><p>변형·없는 곡을 ${tenK(qHS)} 번 넘게 검색하고 메모리가 충분함</p><b>${nm('hash')}</b></div>`;
+  <div><p>DB가 작음. C++에서 2천 항목까지는 색인 없이 전부 비교하는 쪽이 가장 빠르고, 색인 메모리도 0</p><b>${nm('linear')}</b></div>
+  <div class="on"><p>보통의 경우. DB에 있는 곡을 주로 찾거나(${tfmt(last(C.search.in.sorted))}로 가장 빠름), 메모리가 넉넉하지 않음(색인 ${mbfmt(MEM.cpp.sorted)})</p><b>${nm('sorted')}</b></div>
+  <div><p>변형·없는 곡을 주로 찾고(${tfmt(last(C.search.var.hash))}, ${tfmt(last(C.search.out.hash))}로 가장 빠름), 색인 ${mbfmt(MEM.cpp.hash)}를 감당할 메모리가 있음</p><b>${nm('hash')}</b></div>`;
 
 // ---------- Python이 느린 이유 ----------
 const r = (t, m) => last(P.search[t][m]) / last(C.search[t][m]);
