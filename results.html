@@ -3,26 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>최장 멜로디 검색: 실험 결과표</title>
+<title>최장 멜로디 검색: 결과와 비교</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=17">
+<link rel="stylesheet" href="common.css?v=18">
 <style>
 .doc.wide{max-width:1480px}
 .doc.wide section{overflow-x:auto}
 .lead{margin:-8px 0 20px!important;color:var(--sub)}
-.rt{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14.5px}
-.rt th,.rt td{padding:8px 10px;text-align:right;white-space:nowrap}
+.rt{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13.5px}
+.rt th,.rt td{padding:7px 7px;text-align:right;white-space:nowrap}
 .rt thead th{font-size:13px;font-weight:600;color:var(--mute);border-bottom:2px solid var(--ink);vertical-align:bottom}
 .rt thead tr.top th{border-bottom:0;padding-bottom:2px;font-size:14px;color:var(--ink);font-weight:700;text-align:left}
 .rt thead th.l{text-align:left}
 .rt th.lang,.rt td.lang,.rt td.ratio{border-left:1px solid var(--line)}
 .rt tbody tr.first td,.rt tbody tr.first th{border-top:1px solid var(--line)}
-.rt th.grp{display:table-cell;text-align:left;vertical-align:top;padding-top:11px;font-weight:400}
+.rt th.grp{white-space:normal;max-width:190px;display:table-cell;text-align:left;vertical-align:top;padding-top:11px;font-weight:400}
 .rt th.grp .no{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:8px;border-radius:6px;background:var(--ink);color:var(--card);font-size:12px;font-weight:700;vertical-align:1px}
 .rt th.grp b{font-size:15px;color:var(--ink)}
-.rt th.grp small{display:block;margin:3px 0 0 30px;color:var(--mute);font-size:12px}
+.rt th.grp small{display:block;margin:3px 0 0 30px;color:var(--mute);font-size:12px;white-space:normal;max-width:150px}
 .rt td.name{text-align:left;font-weight:600;color:var(--ink)}
 .rt .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:1px}
 .rt .dot.lin{background:var(--mute)}.rt .dot.sor{background:var(--ink)}.rt .dot.has{background:var(--blue)}
@@ -63,43 +63,41 @@ svg .bar.dat{fill:var(--sub)}
 svg .bar.py{fill-opacity:.35}
 svg .hit{fill:transparent}
 .doc section h3.g{margin-top:22px}
+.verdict{margin:12px 0 0!important;padding:14px 18px;border-radius:14px;background:var(--blue-weak);color:var(--blue-ink)!important;font-weight:700;font-size:17px!important}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:1px}
+.dot.lin{background:var(--mute)}.dot.sor{background:var(--ink)}.dot.has{background:var(--blue)}
+.why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:6px 0 4px}
+.why div{padding:16px 18px;border-radius:14px;background:var(--fill)}
+.why div>b{display:block;margin-bottom:6px;font-size:16px}
+.why p{margin:0!important;font-size:15px!important;line-height:1.65!important;color:var(--sub)}
+.pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:8px 0 4px}
+.pick div{display:flex;flex-direction:column;gap:8px;padding:18px 20px;border-radius:16px;background:var(--fill)}
+.pick div.on{background:var(--blue-weak);box-shadow:inset 0 0 0 2px var(--blue)}
+.pick .m{font-size:18px;font-weight:700;display:flex;align-items:center}
+.pick .tag{margin-left:8px;padding:2px 8px;border-radius:6px;background:var(--blue);color:#fff;font-size:12px;font-weight:700}
+.pick .when{font-size:16px;font-weight:700;color:var(--ink);line-height:1.5}
+.pick .why2{margin:0;padding-left:16px;font-size:14px;color:var(--sub);line-height:1.7}
+@media(max-width:959px){.why,.pick{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
 <aside class="side">
   <p class="brand"><svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6.6" cy="18.2" rx="3.7" ry="2.8" transform="rotate(-20 6.6 18.2)"/><ellipse cx="18" cy="16.2" rx="3.7" ry="2.8" transform="rotate(-20 18 16.2)"/><rect x="9.2" y="5.2" width="1.9" height="13"/><rect x="20.6" y="3.2" width="1.9" height="13"/><path d="M9.2 5.2 22.5 2.6v3.4L9.2 8.6z"/></svg>최장 멜로디 검색</p>
-  <nav class="tabs" aria-label="페이지"><a href="index.html">문제 정의</a><a href="linear.html">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html">체이닝 해시</a><a href="compare.html">비교</a><a href="results.html" aria-current="page">결과표</a></nav>
+  <nav class="tabs" aria-label="페이지"><a href="index.html">문제 정의</a><a href="linear.html">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html">체이닝 해시</a><a href="results.html" aria-current="page">결과와 비교</a></nav>
   <nav class="steps" aria-label="목차"><div class="grp"><div class="pills" id="toc">
-    <a href="#table">결과표</a><a href="#g-size">검색: 데이터 크기별</a><a href="#g-theory">이론과 실측</a><a href="#g-type">검색: 입력 유형별</a><a href="#g-build">구축 비용</a><a href="#g-mem">메모리</a>
+    <a href="#summary">결론</a><a href="#g-size">검색: 데이터 크기별</a><a href="#g-theory">이론과 실측</a><a href="#g-type">검색: 입력 유형별</a><a href="#g-build">구축 비용</a><a href="#g-mem">메모리</a><a href="#lang">Python이 느린 이유</a><a href="#choice">어떤 걸 고를까</a><a href="#table">전체 결과표</a>
   </div></div></nav>
 </aside>
 <div class="content">
 <main class="doc wide">
-  <h1>실험 결과표</h1>
+  <h1>실험 결과와 비교</h1>
   <p class="lead">C++·Python 실측. 데이터 수 N(항목) 1천~100만 중 1천·1만·10만·100만. 입력 16칸, 유형마다 질의 50개, 반복 측정 중앙값.</p>
-  <section id="table">
-<table class="rt">
-<thead><tr class="top"><th></th><th></th><th class="lang" colspan="5">C++</th><th class="lang" colspan="5">Python</th><th class="lang">Python ÷ C++</th></tr>
-<tr><th class="l">경우</th><th class="l">방식</th><th class="lang">1천</th><th class="">1만</th><th class="">10만</th><th class="">100만</th><th>1천 → 100만</th><th class="lang">1천</th><th class="">1만</th><th class="">10만</th><th class="">100만</th><th>1천 → 100만</th><th class="lang">100만</th></tr></thead>
-<tbody>
-<tr class="first"><th class="grp" rowspan="3"><span class="no">1</span><b>DB에 있는 곡 (수록곡)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class=" lang">8.2µs</td><td class="">96.4µs</td><td class="">891µs</td><td class="">7.9ms</td><td class="grow">×964</td><td class=" lang">1.7ms</td><td class="">21.2ms</td><td class="">211ms</td><td class="">1.91초</td><td class="grow">×1,111</td><td class="ratio">241배</td></tr>
-<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class="best lang">273ns</td><td class="best">406ns</td><td class="best">303ns</td><td class="best">538ns</td><td class="grow">×2.0</td><td class="best lang">20.8µs</td><td class="best">29.3µs</td><td class="best">26.2µs</td><td class="">32.7µs</td><td class="grow">×1.6</td><td class="ratio">61배</td></tr>
-<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">769ns</td><td class="">927ns</td><td class="">644ns</td><td class="">833ns</td><td class="grow">×1.1</td><td class=" lang">30.6µs</td><td class="">35.4µs</td><td class="">29.4µs</td><td class="best">31.4µs</td><td class="grow">×1.0</td><td class="ratio">38배</td></tr>
-<tr class="first"><th class="grp" rowspan="3"><span class="no">2</span><b>음을 바꾼 곡 (변형)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class=" lang">13.6µs</td><td class="">174µs</td><td class="">1.3ms</td><td class="">12.8ms</td><td class="grow">×939</td><td class=" lang">2.7ms</td><td class="">30.6ms</td><td class="">305ms</td><td class="">2.87초</td><td class="grow">×1,055</td><td class="ratio">225배</td></tr>
-<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class=" lang">1.1µs</td><td class="">1.8µs</td><td class="">1.8µs</td><td class="">3.3µs</td><td class="grow">×2.9</td><td class=" lang">98.8µs</td><td class="">117µs</td><td class="">153µs</td><td class="">194µs</td><td class="grow">×2.0</td><td class="ratio">60배</td></tr>
-<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class="best lang">925ns</td><td class="best">1.0µs</td><td class="best">768ns</td><td class="best">1.0µs</td><td class="grow">×1.1</td><td class="best lang">33.7µs</td><td class="best">36.4µs</td><td class="best">32.2µs</td><td class="best">33.5µs</td><td class="grow">×1.0</td><td class="ratio">32배</td></tr>
-<tr class="first"><th class="grp" rowspan="3"><span class="no">3</span><b>DB에 없는 곡 (미수록곡)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="best lang">16.9µs</td><td class="">236µs</td><td class="">1.5ms</td><td class="">14.3ms</td><td class="grow">×845</td><td class=" lang">3.7ms</td><td class="">38.2ms</td><td class="">372ms</td><td class="">3.51초</td><td class="grow">×958</td><td class="ratio">246배</td></tr>
-<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class=" lang">54.8µs</td><td class="">6.7µs</td><td class="">12.0µs</td><td class="">39.5µs</td><td class="grow">×0.7</td><td class=" lang">1.3ms</td><td class="">184µs</td><td class="">402µs</td><td class="">627µs</td><td class="grow">×0.5</td><td class="ratio">16배</td></tr>
-<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">41.8µs</td><td class="best">5.3µs</td><td class="best">10.5µs</td><td class="best">28.5µs</td><td class="grow">×0.7</td><td class="best lang">736µs</td><td class="best">62.6µs</td><td class="best">121µs</td><td class="best">262µs</td><td class="grow">×0.4</td><td class="ratio">9.2배</td></tr>
-<tr class="first"><th class="grp" rowspan="3"><span class="no">4</span><b>색인 만들기</b><small>구축 시간 · 검색 전 한 번</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
-<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class="best lang">125µs</td><td class="best">1.7ms</td><td class="best">16.3ms</td><td class="best">226ms</td><td class="grow">×1,808</td><td class="best lang">6.0ms</td><td class="best">80.0ms</td><td class="best">1.48초</td><td class="best">16.50초</td><td class="grow">×2,749</td><td class="ratio">73배</td></tr>
-<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">485µs</td><td class="">6.7ms</td><td class="">83.4ms</td><td class="">1.41초</td><td class="grow">×2,915</td><td class=" lang">15.4ms</td><td class="">147ms</td><td class="">2.14초</td><td class="">21.21초</td><td class="grow">×1,377</td><td class="ratio">15배</td></tr>
-<tr class="first"><th class="grp" rowspan="3"><span class="no">5</span><b>색인 크기</b><small>메모리 · C++ 힙 / Python getsizeof</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
-<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class="best lang">4KB</td><td class="best">40KB</td><td class="best">401KB</td><td class="best">4.0MB</td><td class="grow">×1,000</td><td class="best lang">37KB</td><td class="best">364KB</td><td class="best">3.7MB</td><td class="best">36.3MB</td><td class="grow">×992</td><td class="ratio">9.1배</td></tr>
-<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">343KB</td><td class="">3.3MB</td><td class="">32.9MB</td><td class="">327MB</td><td class="grow">×953</td><td class=" lang">350KB</td><td class="">3.3MB</td><td class="">32.8MB</td><td class="">327MB</td><td class="grow">×934</td><td class="ratio">1.0배</td></tr>
-</tbody></table>
-    <p class="key"><span>파란 칸</span> 같은 경우·같은 언어·같은 열에서 가장 좋은 값(가장 빠르거나 가장 작음). 1천 → 100만: 데이터가 1,000배일 때 늘어난 배수. 순차 배열은 색인을 만들지 않아 구축·메모리 없음</p>
+
+  <section id="summary">
+    <h2>결론: 가장 빠른 방식은 입력에 따라 다르고, 균형은 <mark>정렬 배열</mark></h2>
+    <ul id="sum-text"></ul>
+    <p class="verdict" id="verdict"></p>
   </section>
 
   <section id="g-size">
@@ -158,7 +156,45 @@ svg .hit{fill:transparent}
     <figure id="c-mem"></figure>
     <ul>
       <li>원곡 데이터·정렬 배열은 C++가 <code>vector&lt;int&gt;</code>(값만 4바이트), Python이 <code>list</code>(칸마다 포인터 8바이트 + int 객체)를 써서 Python이 3~9배 크고, 해시는 Python도 <code>array("i")</code>를 써서 C++와 같음.</li>
+      <li>해시 색인이 정렬 배열 색인보다 C++ 약 82배 큰 이유: 정렬 배열은 시작 위치 하나에 번호 하나만 저장하지만, 해시는 입력과 몇 칸 일치할지 몰라 길이 1~32 조각을 모두 저장해 같은 위치가 최대 32번 들어감.</li>
     </ul>
+  </section>
+
+  <section id="lang">
+    <h2>Python이 C++보다 느린 이유</h2>
+    <p id="lang-lead"></p>
+    <div class="why" id="f-lang"></div>
+  </section>
+
+  <section id="choice">
+    <h2>어떤 걸 고를까</h2>
+    <p>구축은 검색 전에 한 번만 하면 되므로 선택 기준에서 제외. 남는 기준은 <b>어떤 입력을 주로 찾는지</b>와 <b>메모리 여유</b>.</p>
+    <div class="pick" id="f-pick"></div>
+  </section>
+
+  <section id="table">
+    <h2>전체 결과표</h2>
+<table class="rt">
+<thead><tr class="top"><th></th><th></th><th class="lang" colspan="5">C++</th><th class="lang" colspan="5">Python</th><th class="lang">Python ÷ C++</th></tr>
+<tr><th class="l">경우</th><th class="l">방식</th><th class="lang">1천</th><th class="">1만</th><th class="">10만</th><th class="">100만</th><th>1천 → 100만</th><th class="lang">1천</th><th class="">1만</th><th class="">10만</th><th class="">100만</th><th>1천 → 100만</th><th class="lang">100만</th></tr></thead>
+<tbody>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">1</span><b>DB에 있는 곡 (수록곡)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class=" lang">8.2µs</td><td class="">96.4µs</td><td class="">891µs</td><td class="">7.9ms</td><td class="grow">×964</td><td class=" lang">1.7ms</td><td class="">21.2ms</td><td class="">211ms</td><td class="">1.91초</td><td class="grow">×1,111</td><td class="ratio">241배</td></tr>
+<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class="best lang">273ns</td><td class="best">406ns</td><td class="best">303ns</td><td class="best">538ns</td><td class="grow">×2.0</td><td class="best lang">20.8µs</td><td class="best">29.3µs</td><td class="best">26.2µs</td><td class="">32.7µs</td><td class="grow">×1.6</td><td class="ratio">61배</td></tr>
+<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">769ns</td><td class="">927ns</td><td class="">644ns</td><td class="">833ns</td><td class="grow">×1.1</td><td class=" lang">30.6µs</td><td class="">35.4µs</td><td class="">29.4µs</td><td class="best">31.4µs</td><td class="grow">×1.0</td><td class="ratio">38배</td></tr>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">2</span><b>음을 바꾼 곡 (변형)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class=" lang">13.6µs</td><td class="">174µs</td><td class="">1.3ms</td><td class="">12.8ms</td><td class="grow">×939</td><td class=" lang">2.7ms</td><td class="">30.6ms</td><td class="">305ms</td><td class="">2.87초</td><td class="grow">×1,055</td><td class="ratio">225배</td></tr>
+<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class=" lang">1.1µs</td><td class="">1.8µs</td><td class="">1.8µs</td><td class="">3.3µs</td><td class="grow">×2.9</td><td class=" lang">98.8µs</td><td class="">117µs</td><td class="">153µs</td><td class="">194µs</td><td class="grow">×2.0</td><td class="ratio">60배</td></tr>
+<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class="best lang">925ns</td><td class="best">1.0µs</td><td class="best">768ns</td><td class="best">1.0µs</td><td class="grow">×1.1</td><td class="best lang">33.7µs</td><td class="best">36.4µs</td><td class="best">32.2µs</td><td class="best">33.5µs</td><td class="grow">×1.0</td><td class="ratio">32배</td></tr>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">3</span><b>DB에 없는 곡 (미수록곡)</b><small>검색 시간 · 질의 1개</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="best lang">16.9µs</td><td class="">236µs</td><td class="">1.5ms</td><td class="">14.3ms</td><td class="grow">×845</td><td class=" lang">3.7ms</td><td class="">38.2ms</td><td class="">372ms</td><td class="">3.51초</td><td class="grow">×958</td><td class="ratio">246배</td></tr>
+<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class=" lang">54.8µs</td><td class="">6.7µs</td><td class="">12.0µs</td><td class="">39.5µs</td><td class="grow">×0.7</td><td class=" lang">1.3ms</td><td class="">184µs</td><td class="">402µs</td><td class="">627µs</td><td class="grow">×0.5</td><td class="ratio">16배</td></tr>
+<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">41.8µs</td><td class="best">5.3µs</td><td class="best">10.5µs</td><td class="best">28.5µs</td><td class="grow">×0.7</td><td class="best lang">736µs</td><td class="best">62.6µs</td><td class="best">121µs</td><td class="best">262µs</td><td class="grow">×0.4</td><td class="ratio">9.2배</td></tr>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">4</span><b>색인 만들기</b><small>구축 시간 · 검색 전 한 번</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
+<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class="best lang">125µs</td><td class="best">1.7ms</td><td class="best">16.3ms</td><td class="best">226ms</td><td class="grow">×1,808</td><td class="best lang">6.0ms</td><td class="best">80.0ms</td><td class="best">1.48초</td><td class="best">16.50초</td><td class="grow">×2,749</td><td class="ratio">73배</td></tr>
+<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">485µs</td><td class="">6.7ms</td><td class="">83.4ms</td><td class="">1.41초</td><td class="grow">×2,915</td><td class=" lang">15.4ms</td><td class="">147ms</td><td class="">2.14초</td><td class="">21.21초</td><td class="grow">×1,377</td><td class="ratio">15배</td></tr>
+<tr class="first"><th class="grp" rowspan="3"><span class="no">5</span><b>색인 크기</b><small>메모리 · C++ 힙 / Python getsizeof</small></th><td class="name"><i class="dot lin"></i>순차 배열</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na lang">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na">없음</td><td class="na grow">—</td><td class="na ratio">—</td></tr>
+<tr class=""><td class="name"><i class="dot sor"></i>정렬 배열</td><td class="best lang">4KB</td><td class="best">40KB</td><td class="best">401KB</td><td class="best">4.0MB</td><td class="grow">×1,000</td><td class="best lang">37KB</td><td class="best">364KB</td><td class="best">3.7MB</td><td class="best">36.3MB</td><td class="grow">×992</td><td class="ratio">9.1배</td></tr>
+<tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">343KB</td><td class="">3.3MB</td><td class="">32.9MB</td><td class="">327MB</td><td class="grow">×953</td><td class=" lang">350KB</td><td class="">3.3MB</td><td class="">32.8MB</td><td class="">327MB</td><td class="grow">×934</td><td class="ratio">1.0배</td></tr>
+</tbody></table>
+    <p class="key"><span>파란 칸</span> 같은 경우·같은 언어·같은 열에서 가장 좋은 값(가장 빠르거나 가장 작음). 1천 → 100만: 데이터가 1,000배일 때 늘어난 배수. 순차 배열은 색인을 만들지 않아 구축·메모리 없음</p>
   </section>
 </main>
 </div>
@@ -289,6 +325,46 @@ const mfmt = mb => mb >= 1000 ? p3(mb / 1000) + 'GB' : mb >= 1 ? p3(mb) + 'MB' :
 const mtick = mb => mb >= 1000 ? mb / 1000 + 'GB' : mb >= 1 ? mb + 'MB' : mb * 1000 + 'KB';
 bars('c-mem', [['원곡 데이터', 'data'], ['정렬 배열 색인', 'sorted'], ['체이닝 해시 색인', 'hash']].map(([g, m]) =>
   [g, ['cpp', 'py'].map(l => [g, m, l, MEM[l][m]])]), true, { bw: 56, in: 6, gg: 120, fmt: mfmt, tick: mtick });
+
+// ---------- 비교: 결론, Python이 느린 이유, 어떤 걸 고를까 (위 D, MEM 값 사용) ----------
+const C = D.cpp, P = D.py, $ = id => document.getElementById(id);
+const times = v => (v >= 10 ? Math.round(v) : v.toFixed(1)).toLocaleString('ko-KR') + '배';
+const nm = m => `<i class="dot ${TONE[m]}"></i>${NAME[m]}`;
+const mb = v => v >= 100 ? Math.round(v) + 'MB' : v.toFixed(1) + 'MB';
+const bS = last(C.build.sorted), bH = last(C.build.hash), pS = last(P.build.sorted), pH = last(P.build.hash);
+$('sum-text').innerHTML = `
+  <li>가장 빠른 검색은 입력 종류에 따라 다름. C++는 DB에 있는 곡은 <b>정렬 배열</b>(${tfmt(last(C.search.in.sorted))}), 변형·없는 곡은 <b>체이닝 해시</b>가 가장 빠름.</li>
+  <li>Python은 세 입력 모두 <b>체이닝 해시</b>가 가장 빠름. 다만 DB에 있는 곡은 ${tfmt(last(P.search.in.hash))} 대 ${tfmt(last(P.search.in.sorted))}로 정렬 배열과 거의 같음.</li>
+  <li>해시는 정렬 배열보다 구축이 C++ <b>${times(bH / bS)}</b>·Python <b>${times(pH / pS)}</b>, 색인 메모리가 C++ <b>약 ${times(MEM.cpp.hash / MEM.cpp.sorted)}</b>·Python <b>약 ${times(MEM.py.hash / MEM.py.sorted)}</b>.</li>
+  <li>순차 배열은 준비가 필요 없지만, 100만 항목에서 검색 한 번이 C++ ${tfmt(last(C.search.in.linear))}~${tfmt(last(C.search.out.linear))}, Python ${tfmt(last(P.search.in.linear))}~${tfmt(last(P.search.out.linear))}로 색인 방식보다 훨씬 느림.</li>`;
+$('verdict').textContent = '그래서 두 언어 모두 메모리가 가볍고 검색도 충분히 빠른 정렬 배열이 가장 균형 잡힌 선택';
+
+const r = (t, m) => last(P.search[t][m]) / last(C.search[t][m]);
+$('lang-lead').innerHTML = `같은 알고리즘, 같은 데이터인데 100만 항목 DB에 있는 곡 검색이 Python에서 ${nm('linear')} ${times(r('in', 'linear'))}, ${nm('sorted')} ${times(r('in', 'sorted'))}, ${nm('hash')} ${times(r('in', 'hash'))} 느림.`;
+$('f-lang').innerHTML = `
+  <div><b>한 줄씩 해석하며 실행</b>
+    <p>C++는 미리 기계어로 번역해 두고 실행하지만, Python은 실행하면서 코드를 해석(인터프리터). 같은 비교 한 번에 드는 시간 자체가 큼.</p></div>
+  <div><b>모든 값이 객체</b>
+    <p>숫자 하나도 따로 만든 객체라 값을 읽을 때마다 객체를 찾아가는 단계가 더 있음. <code>list</code>는 값 대신 객체 주소만 이어 저장해 실제 값이 메모리 곳곳에 흩어짐.</p></div>
+  <div><b>단순 반복이 많을수록 차이가 커짐</b>
+    <p>순차 배열은 번호 비교를 가장 많이 반복해서 ${times(r('in', 'linear'))}로 차이가 가장 큼. 해시는 검색 때 하는 일이 적어 ${times(r('in', 'hash'))}로 가장 작음.</p></div>`;
+
+$('f-pick').innerHTML = `
+  <div>
+    <span class="m">${nm('linear')}</span>
+    <span class="when">DB가 아주 작을 때</span>
+    <ul class="why2"><li>C++ 2천 항목까지 가장 빠름</li><li>색인 메모리 0</li><li>Python에서는 해당 없음</li></ul>
+  </div>
+  <div class="on">
+    <span class="m">${nm('sorted')}<span class="tag">추천</span></span>
+    <span class="when">보통의 경우, 메모리가 빠듯할 때</span>
+    <ul class="why2"><li>DB에 있는 곡 C++ 1등 (${tfmt(last(C.search.in.sorted))})</li><li>Python에서도 해시와 거의 같음</li><li>색인 C++ ${mb(MEM.cpp.sorted)} · Python ${mb(MEM.py.sorted)}</li></ul>
+  </div>
+  <div>
+    <span class="m">${nm('hash')}</span>
+    <span class="when">변형·없는 곡을 주로 찾고 메모리가 넉넉할 때</span>
+    <ul class="why2"><li>변형·없는 곡 두 언어 모두 1등</li><li>색인 ${mb(MEM.cpp.hash)} (정렬 배열의 약 ${times(MEM.cpp.hash / MEM.cpp.sorted)})</li></ul>
+  </div>`;
 }
 </script>
 <script>
