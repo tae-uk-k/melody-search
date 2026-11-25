@@ -70,12 +70,15 @@ svg .hit{fill:transparent}
 <aside class="side">
   <p class="brand"><svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6.6" cy="18.2" rx="3.7" ry="2.8" transform="rotate(-20 6.6 18.2)"/><ellipse cx="18" cy="16.2" rx="3.7" ry="2.8" transform="rotate(-20 18 16.2)"/><rect x="9.2" y="5.2" width="1.9" height="13"/><rect x="20.6" y="3.2" width="1.9" height="13"/><path d="M9.2 5.2 22.5 2.6v3.4L9.2 8.6z"/></svg>최장 멜로디 검색</p>
   <nav class="tabs" aria-label="페이지"><a href="index.html">문제 정의</a><a href="linear.html">순차 배열</a><a href="sorted.html">정렬 배열</a><a href="hash.html">체이닝 해시</a><a href="compare.html">비교</a><a href="results.html" aria-current="page">결과표</a></nav>
+  <nav class="steps" aria-label="목차"><div class="grp"><div class="pills" id="toc">
+    <a href="#table">결과표</a><a href="#g-size">검색: 데이터 크기별</a><a href="#g-theory">이론과 실측</a><a href="#g-type">검색: 입력 유형별</a><a href="#g-build">구축 비용</a><a href="#g-mem">메모리</a>
+  </div></div></nav>
 </aside>
 <div class="content">
 <main class="doc wide">
   <h1>실험 결과표</h1>
   <p class="lead">C++·Python 실측. 데이터 수 N(항목) 1천~100만 중 1천·1만·10만·100만. 입력 16칸, 유형마다 질의 50개, 반복 측정 중앙값.</p>
-  <section>
+  <section id="table">
 <table class="rt">
 <thead><tr class="top"><th></th><th></th><th class="lang" colspan="5">C++</th><th class="lang" colspan="5">Python</th><th class="lang">Python ÷ C++</th></tr>
 <tr><th class="l">경우</th><th class="l">방식</th><th class="lang">1천</th><th class="">1만</th><th class="">10만</th><th class="">100만</th><th>1천 → 100만</th><th class="lang">1천</th><th class="">1만</th><th class="">10만</th><th class="">100만</th><th>1천 → 100만</th><th class="lang">100만</th></tr></thead>
@@ -286,6 +289,22 @@ const mfmt = mb => mb >= 1000 ? p3(mb / 1000) + 'GB' : mb >= 1 ? p3(mb) + 'MB' :
 const mtick = mb => mb >= 1000 ? mb / 1000 + 'GB' : mb >= 1 ? mb + 'MB' : mb * 1000 + 'KB';
 bars('c-mem', [['원곡 데이터', 'data'], ['정렬 배열 색인', 'sorted'], ['체이닝 해시 색인', 'hash']].map(([g, m]) =>
   [g, ['cpp', 'py'].map(l => [g, m, l, MEM[l][m]])]), true, { bw: 56, in: 6, gg: 120, fmt: mfmt, tick: mtick });
+}
+</script>
+<script>
+// 읽는 중인 절을 왼쪽 목차에 표시 (비교 페이지와 같은 방식)
+{
+const links = [...document.querySelectorAll('#toc a')];
+const secs = [...document.querySelectorAll('.doc section')];
+const mark = id => links.forEach(a => a.classList.toggle('on', a.hash === '#' + id));
+const update = () => {
+  let cur = secs[0];
+  for (const sec of secs) if (sec.getBoundingClientRect().top < innerHeight * .35) cur = sec;
+  if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) cur = secs[secs.length - 1];
+  mark(cur.id);
+};
+addEventListener('scroll', update, { passive: true });
+update();
 }
 </script>
 </body>
