@@ -35,11 +35,42 @@
     <p>원곡 파일은 블록의 반복. 블록 = 곡명 한 줄, 항목 수 <code>n</code> 한 줄, 다음 <code>n</code>줄에 음 높이 <code>p</code>와 길이 <code>d</code>.</p>
     <p>사용자 입력은 항목 수 <code>r</code> 한 줄, 다음 <code>r</code>줄에 <code>p d</code>. <code>p</code> = -1이면 쉼.</p>
     <p>블록끼리는 이어 붙이지 않음. 곡명이 같은 블록은 같은 곡.</p>
+    <div class="pair">
+      <div><h3>원곡 파일 예시</h3>
+<pre>학교종
+7
+67 2
+67 2
+69 2
+69 2
+67 2
+67 2
+64 4
+학교종
+6
+67 2
+67 2
+64 2
+64 2
+62 6
+-1 2</pre></div>
+      <div><h3>사용자 입력 예시</h3>
+<pre>4
+69 4
+67 12
+-1 4
+72 4</pre></div>
+    </div>
   </section>
 
   <section id="output">
     <h2>출력</h2>
     <p>첫째 줄에 <code>최대 일치 길이: L</code>, 둘째 줄에 <code>일치한 곡 (k곡)</code>, 다음 <code>k</code>줄에 길이 <code>L</code>로 일치하는 곡명을 중복 없이 사전 순으로 출력. 실행 시간 줄은 생략.</p>
+    <h3>출력 예시 (위 입력 예시의 결과)</h3>
+<pre>최대 일치 길이: 3
+일치한 곡 (1곡)
+학교종</pre>
+    <p style="margin-top:10px">입력 1~3번째 칸 = 학교종 두 번째 블록의 4~6번째 칸(미·레·쉼)을 5 높이고 길이 2배. 4번째 칸은 원곡에 없는 변화라 3칸에서 끝남.</p>
   </section>
 
   <section id="limit">
