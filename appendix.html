@@ -88,6 +88,10 @@ svg .zt{font:600 12px "IBM Plex Sans KR",sans-serif;fill:var(--blue-ink)}
 .pick .tag{margin-left:8px;padding:2px 8px;border-radius:6px;background:var(--blue);color:#fff;font-size:12px;font-weight:700}
 .pick .when{font-size:16px;font-weight:700;color:var(--ink);line-height:1.5}
 .pick .why2{margin:0;padding-left:16px;font-size:14px;color:var(--sub);line-height:1.7}
+.env{border-collapse:collapse;width:100%;max-width:960px;font-size:15px}
+.env th,.env td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.65}
+.env th{width:96px;white-space:nowrap;color:var(--mute);font-weight:600}
+.env tr:last-child th,.env tr:last-child td{border-bottom:0}
 @media(max-width:959px){.why,.pick{grid-template-columns:1fr}}
 </style>
 </head>
@@ -121,6 +125,23 @@ svg .zt{font:600 12px "IBM Plex Sans KR",sans-serif;fill:var(--blue-ink)}
 <tr class=""><td class="name"><i class="dot has"></i>체이닝 해시</td><td class=" lang">343KB</td><td class="">3.3MB</td><td class="">32.9MB</td><td class="">327MB</td><td class="grow">×953</td><td class=" lang">350KB</td><td class="">3.3MB</td><td class="">32.8MB</td><td class="">327MB</td><td class="grow">×934</td><td class="ratio">1.0배</td></tr>
 </tbody></table>
     <p class="key"><span>파란 칸</span> 같은 경우·같은 언어·같은 열에서 가장 좋은 값(가장 빠르거나 가장 작음). 1천 → 100만: 데이터가 1,000배일 때 늘어난 배수. 순차 배열은 색인을 만들지 않아 구축·메모리 없음</p>
+  </section>
+  <section id="env">
+    <h2>실험 환경</h2>
+    <table class="env"><tbody>
+<tr><th>실행 위치</th><td>개인 PC(Windows) 안의 Linux 가상 머신 (Hyper-V)</td></tr>
+<tr><th>CPU</th><td>Intel Core Ultra 7 255H, 가상 머신에 2코어 할당</td></tr>
+<tr><th>캐시</th><td>L1d 48KB×2, L2 3MB×2, L3 24MB</td></tr>
+<tr><th>RAM</th><td>3.9GB, 스왑 없음 (Python 측정 프로세스는 3.3GB로 제한)</td></tr>
+<tr><th>OS</th><td>Ubuntu 22.04.5 LTS (Linux 커널 6.8)</td></tr>
+<tr><th>C++</th><td>g++ 11.4.0, <code>-std=c++17 -O2</code>, 시간 측정 <code>std::chrono::high_resolution_clock</code></td></tr>
+<tr><th>Python</th><td>CPython 3.10.12, 시간 측정 <code>time.perf_counter()</code></td></tr>
+<tr><th>데이터</th><td>Lakh MIDI Dataset(clean_midi)에서 뽑은 단선율 연속 구간 310,265개(30,477,226항목). 구간 순서를 시드 20261122로 섞은 뒤 앞에서부터 N항목 사용. 두 언어 모두 같은 파일</td></tr>
+<tr><th>반복 측정</th><td>구축·검색 각 5회 측정 후 중앙값 (순차 배열은 N 20만 미만 3회, 20만 이상 1회). 검색 시간은 입력 유형마다 질의 50개의 평균이고, 정렬 배열·체이닝 해시는 질의마다 20번 반복해 잼</td></tr>
+<tr><th>메모리 측정</th><td>색인 크기는 C++ 힙 할당량, Python <code>sys.getsizeof</code> 합(공유되는 int는 한 번만). 방식마다 새 프로세스에서 데이터를 읽고 색인만 만들어 잼</td></tr>
+<tr><th>결과 확인</th><td>N 10단계 모두 질의 150개에서 세 방식·두 언어의 결과(최장 일치 길이·곡명)가 같음</td></tr>
+<tr><th>측정일</th><td>C++ 2026-11-25, Python 2026-11-24~25 (코드 최적화 후 다시 잰 값)</td></tr>
+    </tbody></table>
   </section>
 </main>
 </div>
